@@ -58,7 +58,35 @@ public class ChessPiece {
         if (piece.getPieceType() == PieceType.BISHOP){
             return bishopMoves(board, myPosition);
         }
+        else if (piece.getPieceType() == PieceType.KING){
+            return kingMoves(board, myPosition);
+        }
         return List.of();
+    }
+
+    private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
+        List<ChessMove> moves = new ArrayList<>();
+        int[][] kingsteps = { //all possible movements of King
+                {1, 0},
+                {1, 1},
+                {1, -1},
+                {0, 1},
+                {0, -1},
+                {-1, 0},
+                {-1, -1},
+                {-1, 1}
+        };
+        for (int[] step : kingsteps) {
+            int newRow =  myPosition.getRow() + step[0];
+            int newCol =  myPosition.getColumn() + step[1];
+
+            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                moves.add(new ChessMove(myPosition, newPosition, null));
+
+            }
+        }
+        return moves;
     }
 
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
