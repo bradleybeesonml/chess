@@ -67,7 +67,45 @@ public class ChessPiece {
             return knightMoves(board, myPosition);
         }
 
+        else if (piece.getPieceType() == PieceType.PAWN){
+            return pawnMoves(board, myPosition);
+        }
+
         return List.of();
+    }
+
+    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
+        List<ChessMove> moves = new ArrayList<>();
+        if (this.getTeamColor() == ChessGame.TeamColor.BLACK) {
+            if (myPosition.getRow() == 7) { //initial move (moves by 2)
+                ChessPosition newPosition = new ChessPosition(myPosition.getRow()-2, myPosition.getColumn());
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            int newRow = myPosition.getRow() - 1;
+            if (newRow <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, myPosition.getColumn());
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+                if (pieceAtNewPosition == null){
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+        }
+        else if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (myPosition.getRow() == 2) { //initial move (moves by 2)
+                ChessPosition newPosition = new ChessPosition(myPosition.getRow()+2, myPosition.getColumn());
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }
+            int newRow = myPosition.getRow() + 1;
+            if (newRow <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, myPosition.getColumn());
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+                if (pieceAtNewPosition == null){
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+        }
+
+        return moves;
     }
 
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
