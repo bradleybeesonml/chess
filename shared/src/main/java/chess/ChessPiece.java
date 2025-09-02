@@ -64,10 +64,10 @@ public class ChessPiece {
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> moves = new ArrayList<>();
         int[][] possibledirections = {
-                {1, 1},   // up one, over one
-                {1, -1},  // up one, to the left one
-                {-1, 1},  // down one, over one
-                {-1, -1}  // down one, to the left one
+                {1, 1},
+                {1, -1},
+                {-1, 1},
+                {-1, -1}
         };
     
         for (int[] direction : possibledirections) {
@@ -79,7 +79,20 @@ public class ChessPiece {
     
             while (currentRow >= 1 && currentRow <= 8 && currentCol >= 1 && currentCol <= 8) {
                 ChessPosition newPosition = new ChessPosition(currentRow, currentCol);
-                moves.add(new ChessMove(myPosition, newPosition, null));
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+
+                if (pieceAtNewPosition == null) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+
+                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                    break;
+                }
+                else {
+                    break;
+                }
+
     
                 currentRow += rowStep;
                 currentCol += colStep;
