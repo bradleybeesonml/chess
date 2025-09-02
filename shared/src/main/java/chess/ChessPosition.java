@@ -30,4 +30,9 @@ public class ChessPosition {
     public int getColumn() {
         return column;
     }
+
+    @Override
+    public String toString() {
+        return String.format("[%d,%d]", row, column);
+    }
 }
