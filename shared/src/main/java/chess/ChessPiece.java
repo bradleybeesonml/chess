@@ -82,8 +82,14 @@ public class ChessPiece {
 
             if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
                 ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                moves.add(new ChessMove(myPosition, newPosition, null));
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
 
+                if (pieceAtNewPosition == null) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+            else {
+                break;
             }
         }
         return moves;
