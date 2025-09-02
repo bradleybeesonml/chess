@@ -58,10 +58,47 @@ public class ChessPiece {
         if (piece.getPieceType() == PieceType.BISHOP){
             return bishopMoves(board, myPosition);
         }
+
         else if (piece.getPieceType() == PieceType.KING){
             return kingMoves(board, myPosition);
         }
+
+        else if (piece.getPieceType() == PieceType.KNIGHT){
+            return knightMoves(board, myPosition);
+        }
+
         return List.of();
+    }
+
+    private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
+        List<ChessMove> moves = new ArrayList<>();
+        int[][] knightsteps = { //all possible movements of Knight
+                {2, 1},
+                {2, -1},
+                {1, 2},
+                {1, -2},
+                {-1, 2},
+                {-1, -2},
+                {-2, 1},
+                {-2, -1}
+        };
+        for (int[] knightstep : knightsteps) {
+            int newRow = myPosition.getRow() + knightstep[0];
+            int newCol = myPosition.getColumn() + knightstep[1];
+
+            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+
+                if (pieceAtNewPosition == null) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+        }
+        return moves;
     }
 
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
