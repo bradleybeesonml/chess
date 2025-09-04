@@ -80,7 +80,7 @@ public class ChessPiece {
             return rookMoves(board, myPosition);
         }
 
-        return List.of();
+        throw new IllegalArgumentException("Error: no such piece: " + piece.getPieceType());
     }
 
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
