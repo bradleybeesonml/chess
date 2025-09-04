@@ -55,7 +55,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
+        ChessPiece piece = board.getPiece(myPosition); //get the piece at the current position
+
+         //Call the correct helper function to return the moves for the piece
         if (piece.getPieceType() == PieceType.BISHOP){
             return bishopMoves(board, myPosition);
         }
@@ -80,42 +82,43 @@ public class ChessPiece {
             return rookMoves(board, myPosition);
         }
 
+        //fallback in case the piece type doesn't exist
         throw new IllegalArgumentException("Error: no such piece: " + piece.getPieceType());
     }
 
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
-        List<ChessMove> moves = new ArrayList<>();
-        int[][] possibledirections = {
+        List<ChessMove> moves = new ArrayList<>(); //create a List of possible moves
+        int[][] possibledirections = { //rooks can move up, down, left, or right one square at a time until blocked
                 {0, 1},
                 {1, 0},
                 {-1, 0},
                 {0, -1}
         };
         for (int[] direction : possibledirections) {
-            int rowStep = direction[0];
+            int rowStep = direction[0]; //split the current possible direction into x and y steps
             int colStep = direction[1];
 
-            int currentRow = myPosition.getRow() + rowStep;
-            int currentCol = myPosition.getColumn() + colStep;
+            int currentRow = myPosition.getRow() + rowStep; //update the row
+            int currentCol = myPosition.getColumn() + colStep; //update the column
 
-            while (currentRow >= 1 && currentRow <= 8 && currentCol >= 1 && currentCol <= 8) {
-                ChessPosition newPosition = new ChessPosition(currentRow, currentCol);
-                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+            while (currentRow >= 1 && currentRow <= 8 && currentCol >= 1 && currentCol <= 8) { //make sure new row and column are within the bounds of the board
+                ChessPosition newPosition = new ChessPosition(currentRow, currentCol); //create a new ChessPosition instance
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition); //Get the piece at new position (if there is no piece, will return null)
 
-                if (pieceAtNewPosition == null) {
+                if (pieceAtNewPosition == null) { //if null, the step is valid and this is a possible move
                     moves.add(new ChessMove(myPosition, newPosition, null));
                 }
 
-                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
+                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) { //if there is a piece of the opposite color, it can be taken but the movement must stop
                     moves.add(new ChessMove(myPosition, newPosition, null));
-                    break;
+                    break; //break the movement loop because we captured a piece
                 }
                 else {
-                    break;
+                    break; //break because we must have encountered a piece of our own color (or the edge of the board), so the last valid move is the last one we added
                 }
 
 
-                currentRow += rowStep;
+                currentRow += rowStep; //continue to to the next step if we haven't broken the loop yet
                 currentCol += colStep;
             }
 
