@@ -79,10 +79,12 @@ public class ChessPiece {
         if (this.getTeamColor() == ChessGame.TeamColor.BLACK) {
             int[] capturableColumns = {myPosition.getColumn()-1, myPosition.getColumn()+1};
             for (int column : capturableColumns) {
-                ChessPosition enemyPosition = new ChessPosition(myPosition.getRow()-1, column);
-                ChessPiece enemyPiece = board.getPiece(enemyPosition);
-                if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.WHITE){
-                    moves.add(new ChessMove(myPosition, enemyPosition, null));
+                if (column <=8 && column >=1) {
+                    ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() - 1, column);
+                    ChessPiece enemyPiece = board.getPiece(enemyPosition);
+                    if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        moves.add(new ChessMove(myPosition, enemyPosition, null));
+                    }
                 }
             }
             if (myPosition.getRow() == 7) {
@@ -105,10 +107,12 @@ public class ChessPiece {
         else if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
             int[] capturableColumns = {myPosition.getColumn()-1, myPosition.getColumn()+1};
             for (int column : capturableColumns) {
-                ChessPosition enemyPosition = new ChessPosition(myPosition.getRow()+1, column);
-                ChessPiece enemyPiece = board.getPiece(enemyPosition);
-                if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.BLACK){
-                    moves.add(new ChessMove(myPosition, enemyPosition, null));
+                if (column >=1 && column <=8) {
+                    ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() + 1, column);
+                    ChessPiece enemyPiece = board.getPiece(enemyPosition);
+                    if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                        moves.add(new ChessMove(myPosition, enemyPosition, null));
+                    }
                 }
             }
             if (myPosition.getRow() == 2) {
