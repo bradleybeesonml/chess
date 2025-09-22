@@ -58,32 +58,22 @@ public class ChessPiece {
         ChessPiece piece = board.getPiece(myPosition); //get the piece at the current position
 
          //Call the correct helper function to return the moves for the piece
-        if (piece.getPieceType() == PieceType.BISHOP){
-            return bishopMoves(board, myPosition);
+        switch (piece.getPieceType()) {
+            case BISHOP:
+                return bishopMoves(board, myPosition);
+            case KING:
+                return kingMoves(board, myPosition);
+            case KNIGHT:
+                return knightMoves(board, myPosition);
+            case PAWN:
+                return pawnMoves(board, myPosition);
+            case QUEEN:
+                return queenMoves(board, myPosition);
+            case ROOK:
+                return rookMoves(board, myPosition);
+            default:
+                throw new IllegalArgumentException("Error: no such piece: " + piece.getPieceType());
         }
-
-        else if (piece.getPieceType() == PieceType.KING){
-            return kingMoves(board, myPosition);
-        }
-
-        else if (piece.getPieceType() == PieceType.KNIGHT){
-            return knightMoves(board, myPosition);
-        }
-
-        else if (piece.getPieceType() == PieceType.PAWN){
-            return pawnMoves(board, myPosition);
-        }
-
-        else if (piece.getPieceType() == PieceType.QUEEN){
-            return queenMoves(board, myPosition);
-        }
-
-        else if (piece.getPieceType() == PieceType.ROOK){
-            return rookMoves(board, myPosition);
-        }
-
-        //fallback in case the piece type doesn't exist
-        throw new IllegalArgumentException("Error: no such piece: " + piece.getPieceType());
     }
 
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
