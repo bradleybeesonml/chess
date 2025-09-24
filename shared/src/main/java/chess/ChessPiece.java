@@ -317,7 +317,7 @@ public class ChessPiece {
                 }
             }
             else {
-                break;
+                continue;
             }
         }
         return moves;
