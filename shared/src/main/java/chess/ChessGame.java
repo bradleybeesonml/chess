@@ -93,6 +93,9 @@ public class ChessGame {
         if(piece == null){
             throw new InvalidMoveException("No piece at move start position.");
         }
+        if(piece.getTeamColor() != turn){
+            throw new InvalidMoveException("This piece is trying to move out of turn");
+        }
         Collection<ChessMove> validMove = validMoves(move.getStartPosition());
         if(!validMove.contains(move)){
             throw new InvalidMoveException("This move is not valid. Failed validMove validation.");
@@ -106,6 +109,12 @@ public class ChessGame {
             ChessPiece promotedPawn = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
             board.addPiece(move.getEndPosition(), promotedPawn);
             board.addPiece(move.getStartPosition(), null);
+        }
+        if(piece.getTeamColor() == TeamColor.WHITE){
+            turn = TeamColor.BLACK;
+        }
+        else{
+            turn = TeamColor.WHITE;
         }
     }
 
