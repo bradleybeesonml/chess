@@ -199,6 +199,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        Collection<ChessMove> staleMate = new ArrayList<>();
         if (isInCheck(teamColor)){
             return false;
         }
@@ -208,13 +209,16 @@ public class ChessGame {
                 ChessPosition friendPosition = new ChessPosition(row, col);
                 ChessPiece friendlyPiece = board.getPiece(friendPosition);
                 if (friendlyPiece != null && friendlyPiece.getTeamColor()==teamColor) {
-                    Collection<ChessMove> staleMate = validMoves(friendPosition);
-
-                    if(staleMate.isEmpty()){
-                        return true;
+                    Collection<ChessMove> moves = validMoves(friendPosition);
+                    for(ChessMove move: moves){
+                        staleMate.add(move);
                     }
+
                 }
             }
+        }
+        if(staleMate.isEmpty()){
+            return true;
         }
 
         return false;
