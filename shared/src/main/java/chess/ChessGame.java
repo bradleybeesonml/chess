@@ -62,7 +62,7 @@ public class ChessGame {
                 ChessPiece endPiece = board.getPiece(move.getEndPosition());
                 ChessPiece startPiece = board.getPiece(move.getStartPosition());
 
-                board.addPiece(move.getEndPosition(), endPiece);
+                board.addPiece(move.getEndPosition(), startPiece);
                 board.addPiece(move.getStartPosition(), null);
 
                 if(!isInCheck(piece.getTeamColor())){
@@ -74,7 +74,7 @@ public class ChessGame {
             }
         }
         else {
-            return validMovesArray;
+            return null;
         }
 
         return validMovesArray;
