@@ -93,7 +93,10 @@ public class ChessGame {
         if(piece == null){
             throw new InvalidMoveException("No piece at move start position.");
         }
-
+        Collection<ChessMove> validMove = validMoves(move.getStartPosition());
+        if(!validMove.contains(move)){
+            throw new InvalidMoveException("This move is not valid. Failed validMove validation.");
+        }
         if(move.getPromotionPiece()==null) {
 
             board.addPiece(move.getEndPosition(), piece);
