@@ -20,21 +20,22 @@ public class StandardAPITests {
 
     // ### TESTING SETUP/CLEANUP ###
 
-    @AfterAll
-    static void stopServer() {
-        server.stop();
-    }
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(0);
+        var port = server.run(0); //Javalin finds an open port when passed 0
         System.out.println("Started test HTTP server on " + port);
 
         serverFacade = new TestServerFacade("localhost", Integer.toString(port));
         existingUser = new TestUser("ExistingUser", "existingUserPassword", "eu@mail.com");
         newUser = new TestUser("NewUser", "newUserPassword", "nu@mail.com");
         createRequest = new TestCreateRequest("testGame");
+    }
+
+    @AfterAll
+    static void stopServer() {
+        server.stop();
     }
 
     @BeforeEach
