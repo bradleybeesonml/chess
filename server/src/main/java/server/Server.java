@@ -39,8 +39,33 @@ public class Server {
         server.post("user", ctx -> register(ctx));
         server.post("session", ctx -> login(ctx));
         server.delete("session", ctx -> logout(ctx));
+        server.post("game", ctx -> createGame(ctx));
+
 
         // Register your endpoints and exception handlers here.
+
+    }
+
+    private void createGame(Context ctx){
+        var serializer = new Gson();
+        String authToken = ctx.header("authorization");
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, Map.class);
+
+        if (!authTokens.containsKey(authToken)){ // validate auth
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            return;
+        }
+
+        int gameID = nextGameId.getAndIncrement();
+        String gameName = (String) req.get("gameName");
+        GameData game = new GameData(gameID, null, null, gameName, new chess.ChessGame());
+        games.put(gameID, game);
+
+        ctx.status(200);
+        var res = Map.of("gameID", gameID);
+        ctx.result(serializer.toJson(res));
 
     }
 
