@@ -57,6 +57,22 @@ public class Server {
             return;
         }
 
+        if (existingUsernames.contains(username)){
+            if (!password.equals(userPasswords.get(username))){
+                ctx.status(401);
+                ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+                return;
+            }
+            else{
+                String authToken = java.util.UUID.randomUUID().toString();
+                authTokens.put(authToken, username);
+
+                ctx.status(200);
+                var res = Map.of("username", username, "authToken", authToken);
+                ctx.result(serializer.toJson(res));
+            }
+        }
+
     }
 
     private void register(Context ctx){
