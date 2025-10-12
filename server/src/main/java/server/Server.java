@@ -37,8 +37,25 @@ public class Server {
         });
 
         server.post("user", ctx -> register(ctx));
+        server.post("session", ctx -> login(ctx));
 
         // Register your endpoints and exception handlers here.
+
+    }
+    private void login(Context ctx){
+        var serializer = new Gson();
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, Map.class);
+
+        String username = (String) req.get("username");
+        String password = (String) req.get("password");
+
+        if (username == null || password == null ||
+                username.isEmpty() || password.isEmpty()) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
 
     }
 
