@@ -25,7 +25,16 @@ public class Server {
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
-        server.delete("db", ctx -> ctx.result("{}"));
+        server.delete("db", ctx -> {
+            existingUsernames.clear();
+            userPasswords.clear();
+            userEmails.clear();
+            authTokens.clear();
+            games.clear();
+            nextGameId.set(1);
+
+            ctx.result("{}");
+        });
 
         server.post("user", ctx -> register(ctx));
 
@@ -49,7 +58,20 @@ public class Server {
             return;
         }
 
-        var res = Map.of("username", req.get("username"), "authToken", "1234");
+        if (existingUsernames.contains(username)) {
+            ctx.status(403);
+            ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
+            return;
+        }
+
+        String authToken = java.util.UUID.randomUUID().toString();
+        existingUsernames.add(username);
+        userPasswords.put(username, password);
+        userEmails.put(username, email);
+        authTokens.put(authToken, username);
+
+        ctx.status(200);
+        var res = Map.of("username", req.get("username"), "authToken", authToken);
         ctx.result(serializer.toJson(res));
 
 
