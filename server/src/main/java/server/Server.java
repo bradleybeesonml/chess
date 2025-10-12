@@ -48,6 +48,12 @@ public class Server {
         var serializer = new Gson();
         String authToken = ctx.header("authorization");
 
+        if (!authTokens.containsKey(authToken)){
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            return;
+        }
+
         authTokens.remove(authToken);
         ctx.status(200);
         ctx.result("{}");
