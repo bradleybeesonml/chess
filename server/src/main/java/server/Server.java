@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -38,9 +39,44 @@ public class Server {
         server.delete("session", ctx -> logout(ctx));
         server.post("game", ctx -> createGame(ctx));
         server.get("game", ctx -> listGames(ctx));
-
+        server.put("game", ctx -> joinGame(ctx));
 
         // Register your endpoints and exception handlers here.
+
+    }
+
+    private void joinGame(Context ctx){
+        var serializer = new Gson();
+        String authToken = ctx.header("authorization");
+
+        if (!authTokens.containsKey(authToken)){ // validate auth
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            return;
+        }
+
+        String reqJson = ctx.body();
+        var req = serializer.fromJson(reqJson, Map.class);
+
+        Double gameIdDouble = (Double) req.get("gameID"); //GSON returns a double here instead of int
+        Integer gameID = gameIdDouble.intValue();
+        String color = (String) req.get("playerColor");
+
+        if(color == null){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
+
+        else if(!color.equals("WHITE") && !color.equals("BLACK")){
+                ctx.status(400);
+                ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+                return;
+        }
+
+
+
+
 
     }
 
