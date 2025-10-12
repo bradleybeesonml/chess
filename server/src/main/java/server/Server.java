@@ -3,11 +3,24 @@ package server;
 import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
+import model.GameData;
+
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
 
     private final Javalin server;
+
+    private final Set<String> existingUsernames = new HashSet<>();
+    private final Map<String, String> userPasswords = new HashMap<>();
+    private final Map<String, String> userEmails = new HashMap<>();
+    private final Map<String, String> authTokens = new HashMap<>();
+    private final Map<Integer, GameData> games = new HashMap<>();
+    private final AtomicInteger nextGameId = new AtomicInteger(1);
 
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
