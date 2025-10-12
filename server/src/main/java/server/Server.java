@@ -38,8 +38,22 @@ public class Server {
 
         server.post("user", ctx -> register(ctx));
         server.post("session", ctx -> login(ctx));
+        server.delete("session", ctx -> logout(ctx));
 
         // Register your endpoints and exception handlers here.
+
+    }
+
+    private void logout(Context ctx){
+        var serializer = new Gson();
+        String authToken = ctx.header("authorization");
+
+        authTokens.remove(authToken);
+        ctx.status(200);
+        ctx.result("{}");
+
+
+
 
     }
     private void login(Context ctx){
