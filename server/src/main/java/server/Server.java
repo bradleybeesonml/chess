@@ -58,8 +58,12 @@ public class Server {
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, Map.class);
 
-        Double gameIdDouble = (Double) req.get("gameID"); //GSON returns a double here instead of int
-        Integer gameID = gameIdDouble.intValue();
+        Integer gameID = null;
+        Object gameIdObj = req.get("gameID");
+        if (gameIdObj instanceof Number) {
+            gameID = ((Number) gameIdObj).intValue();
+        }
+
         String color = (String) req.get("playerColor");
 
         if(color == null){
@@ -73,6 +77,15 @@ public class Server {
                 ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
                 return;
         }
+
+        if (gameID == null) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
+
+
+
 
 
 
