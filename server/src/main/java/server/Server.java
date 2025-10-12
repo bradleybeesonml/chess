@@ -51,6 +51,13 @@ public class Server {
         String authToken = ctx.header("authorization");
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, Map.class);
+        String gameName = (String) req.get("gameName");
+
+        if (gameName == null || gameName.isEmpty()){
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
 
         if (!authTokens.containsKey(authToken)){ // validate auth
             ctx.status(401);
@@ -59,7 +66,6 @@ public class Server {
         }
 
         int gameID = nextGameId.getAndIncrement();
-        String gameName = (String) req.get("gameName");
         GameData game = new GameData(gameID, null, null, gameName, new chess.ChessGame());
         games.put(gameID, game);
 
