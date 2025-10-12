@@ -5,10 +5,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server {
@@ -40,10 +37,33 @@ public class Server {
         server.post("session", ctx -> login(ctx));
         server.delete("session", ctx -> logout(ctx));
         server.post("game", ctx -> createGame(ctx));
+        server.get("game", ctx -> listGames(ctx));
 
 
         // Register your endpoints and exception handlers here.
 
+    }
+
+    private void listGames(Context ctx){
+        var serializer = new Gson();
+        String authToken = ctx.header("authorization");
+
+        if (!authTokens.containsKey(authToken)){ // validate auth
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            return;
+        }
+
+        List gamesList = games.values().stream().map(game -> Map.of(
+                "gameID", game.gameID(),
+                "whiteUsername", game.whiteUsername() != null ? game.whiteUsername() : null,
+                "blackUsername", game.blackUsername() != null ? game.blackUsername() : null,
+                "gameName", game.gameName()
+        )).toList();
+
+        ctx.status(200);
+        var res = Map.of("games", gamesList);
+        ctx.result(serializer.toJson(res));
     }
 
     private void createGame(Context ctx){
@@ -89,10 +109,8 @@ public class Server {
         ctx.status(200);
         ctx.result("{}");
 
-
-
-
     }
+
     private void login(Context ctx){
         var serializer = new Gson();
         String reqJson = ctx.body();
