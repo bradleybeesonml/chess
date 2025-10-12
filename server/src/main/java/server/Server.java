@@ -72,6 +72,11 @@ public class Server {
                 ctx.result(serializer.toJson(res));
             }
         }
+        else{
+            ctx.status(401);
+            ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
+            return;
+        }
 
     }
 
