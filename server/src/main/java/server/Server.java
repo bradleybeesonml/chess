@@ -25,8 +25,19 @@ public class Server {
         String reqJson = ctx.body();
         var req = serializer.fromJson(reqJson, Map.class);
 
-        var res = Map.of("username", req.get("username"), "authToken", "testToken");
-        ctx.result(serializer.toJson(req));
+        String username = (String) req.get("username");
+        String password = (String) req.get("password");
+        String email = (String) req.get("email");
+
+        if (username == null || password == null || email == null ||
+                username.isEmpty() || password.isEmpty() || email.isEmpty()) {
+            ctx.status(400);
+            ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+            return;
+        }
+
+        var res = Map.of("username", req.get("username"), "authToken", "1234");
+        ctx.result(serializer.toJson(res));
 
 
     }
