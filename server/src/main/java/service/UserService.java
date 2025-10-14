@@ -13,18 +13,18 @@ public class UserService {
 
     }
 
-    public RegisterResult register(RegisterRequest request) throws DataAccessException {
+    public RegisterResult register(RegisterRequest request) throws BadRequestException, AlreadyTakenException, DataAccessException{
         if (request.username() == null || request.password() == null || request.email() == null ||
                 request.username().isEmpty() || request.password().isEmpty() || request.email().isEmpty()) {
-            throw new DataAccessException("Error: bad request");
+            throw new BadRequestException("Error: bad request");
         }
 
         if (userDAO.getUser(request.username()) != null) {
-            throw new DataAccessException("Already taken");
+            throw new AlreadyTakenException("Already taken");
         }
 
         UserData newUser = new UserData(request.username(), request.email(), request.password());
-        userDAO.insertUser(newUser);
+        userDAO.createUser(newUser);
 
         String authToken = UUID.randomUUID().toString();
         authDAO.insertAuth(new AuthData(authToken, request.username()));

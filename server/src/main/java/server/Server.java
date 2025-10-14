@@ -256,38 +256,36 @@ public class Server {
 
     private void register(Context ctx){
         var serializer = new Gson();
-        String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, Map.class);
-
+        try{
+            var req = serializer.fromJson(ctx.body(), Map.class);
         String username = (String) req.get("username");
         String password = (String) req.get("password");
         String email = (String) req.get("email");
 
-        if (username == null || password == null || email == null ||
-                username.isEmpty() || password.isEmpty() || email.isEmpty()) {
+        RegisterRequest request = new RegisterRequest(username, password, email);
+        RegisterResult result = userService.register(request);
+        ctx.status(200);
+        ctx.result(serializer.toJson(Map.of("username", result.username(), "authToken", result.authToken())));
+        }
+        catch(BadRequestException e){
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
             return;
         }
-
-        if (existingUsernames.contains(username)) {
+        catch(AlreadyTakenException e){
             ctx.status(403);
             ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
             return;
         }
 
-        String authToken = java.util.UUID.randomUUID().toString();
-        existingUsernames.add(username);
-        userPasswords.put(username, password);
-        userEmails.put(username, email);
-        authTokens.put(authToken, username);
-
-        ctx.status(200);
-        var res = Map.of("username", req.get("username"), "authToken", authToken);
-        ctx.result(serializer.toJson(res));
+        catch(DataAccessException e){
+            ctx.status(500);
+            ctx.result(serializer.toJson(Map.of("message", "Error: internal server error")));
+            return;
+        }
 
 
-    }
+        }
 
     public int run(int desiredPort) {
         server.start(desiredPort);
