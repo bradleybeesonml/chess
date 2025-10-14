@@ -5,9 +5,12 @@ import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.stream.Collectors.toList;
 
 public class Server {
 
@@ -48,6 +51,7 @@ public class Server {
     private void joinGame(Context ctx){
         var serializer = new Gson();
         String authToken = ctx.header("authorization");
+        String username = authTokens.get(authToken);
 
         if (!authTokens.containsKey(authToken)){ // validate auth
             ctx.status(401);
@@ -84,13 +88,56 @@ public class Server {
             return;
         }
 
+        else{
+            GameData existingGame = games.get(gameID);
+            if (existingGame == null) {
+                ctx.status(400);
+                ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
+                return;
+            }
+            if (color.equals("WHITE") && existingGame.whiteUsername() != null) {
+                ctx.status(403);
+                ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
+                return;
+            }
+            if (color.equals("BLACK") && existingGame.blackUsername() != null) {
+                ctx.status(403);
+                ctx.result(serializer.toJson(Map.of("message", "Error: already taken")));
+                return;
+            }
 
+            GameData updatedGame = getGameData(color, existingGame, username);
+            games.put(gameID, updatedGame);
+    
+            ctx.status(200);
+            ctx.result("{}");
 
+        }
 
+    }
 
-
-
-
+    @NotNull
+    private static GameData getGameData(String color, GameData existingGame, String username) {
+        GameData updatedGame;
+        if (color.equals("WHITE")) {
+            updatedGame = new GameData(
+                    existingGame.gameID(),
+                    username,
+                    existingGame.blackUsername(),
+                    existingGame.gameName(),
+                    existingGame.game()
+            );
+        }
+        else {
+            updatedGame = new GameData(
+                    existingGame.gameID(),
+                    existingGame.whiteUsername(),
+                    username,
+                    existingGame.gameName(),
+                    existingGame.game()
+            );
+        }
+        return updatedGame;
     }
 
     private void listGames(Context ctx){
@@ -103,12 +150,14 @@ public class Server {
             return;
         }
 
-        List gamesList = games.values().stream().map(game -> Map.of(
-                "gameID", game.gameID(),
-                "whiteUsername", game.whiteUsername() != null ? game.whiteUsername() : null,
-                "blackUsername", game.blackUsername() != null ? game.blackUsername() : null,
-                "gameName", game.gameName()
-        )).toList();
+        List gamesList = games.values().stream().map(game -> {
+            var gameMap = new HashMap<String, Object>();
+            gameMap.put("gameID", game.gameID());
+            gameMap.put("blackUsername", game.blackUsername());
+            gameMap.put("whiteUsername", game.whiteUsername());
+            gameMap.put("gameName", game.gameName());
+            return gameMap;
+        }).toList();
 
         ctx.status(200);
         var res = Map.of("games", gamesList);
