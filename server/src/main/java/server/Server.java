@@ -34,13 +34,10 @@ public class Server {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         server.delete("db", ctx -> {
-            existingUsernames.clear();
-            userPasswords.clear();
-            userEmails.clear();
-            authTokens.clear();
+            userDAO.clear();
+            authDAO.clear();
             games.clear();
             nextGameId.set(1);
-
             ctx.result("{}");
         });
 
@@ -286,6 +283,7 @@ public class Server {
 
 
         }
+
 
     public int run(int desiredPort) {
         server.start(desiredPort);
