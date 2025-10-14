@@ -6,6 +6,8 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
+import dataaccess.*;
+import service.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,6 +17,11 @@ import static java.util.stream.Collectors.toList;
 public class Server {
 
     private final Javalin server;
+    
+    private final UserDAO userDAO = new MemoryUserDAO();
+    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final UserService userService = new UserService(userDAO, authDAO);
+    
 
     private final Set<String> existingUsernames = new HashSet<>();
     private final Map<String, String> userPasswords = new HashMap<>();
