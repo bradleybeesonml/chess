@@ -23,7 +23,7 @@ public class UserService {
             throw new AlreadyTakenException("Already taken");
         }
 
-        UserData newUser = new UserData(request.username(), request.email(), request.password());
+        UserData newUser = new UserData(request.username(), request.password(), request.email());
         userDAO.createUser(newUser);
 
         String authToken = UUID.randomUUID().toString();
@@ -31,4 +31,26 @@ public class UserService {
 
         return new RegisterResult(request.username(), authToken);
     }
+
+    public LoginResult login(LoginRequest request) throws BadRequestException, UnauthorizedException, DataAccessException{
+        if (request.username() == null || request.password() == null ||
+                request.username().isEmpty() || request.password().isEmpty()) {
+            throw new BadRequestException("Error: bad request");
+        }
+
+        UserData user = userDAO.getUser(request.username());
+        if (user == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+
+        if (!user.password().equals(request.password())) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+
+        String authToken = UUID.randomUUID().toString();
+        authDAO.insertAuth(new AuthData(authToken, request.username()));
+
+        return new LoginResult(request.username(), authToken);
+    }
+
 }

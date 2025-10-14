@@ -18,8 +18,13 @@ public class Server {
 
     private final Javalin server;
     
+    // Data Access Objects
     private final UserDAO userDAO = new MemoryUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final GameDAO gameDAO = new MemoryGameDAO();
+
+    // Services
+    private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
     private final UserService userService = new UserService(userDAO, authDAO);
     
 
@@ -34,11 +39,23 @@ public class Server {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         server.delete("db", ctx -> {
-            userDAO.clear();
-            authDAO.clear();
-            games.clear();
-            nextGameId.set(1);
-            ctx.result("{}");
+            try {
+                clearService.clear();
+                
+                // Also clear old data structures until other endpoints are refactored
+                existingUsernames.clear();
+                userPasswords.clear();
+                userEmails.clear();
+                authTokens.clear();
+                games.clear();
+                nextGameId.set(1);
+                
+                ctx.status(200);
+                ctx.result("{}");
+            } catch (DataAccessException e) {
+                ctx.status(500);
+                ctx.result(new Gson().toJson(Map.of("message", "Error: " + e.getMessage())));
+            }
         });
 
         server.post("user", ctx -> register(ctx));
@@ -213,42 +230,35 @@ public class Server {
 
     }
 
-    private void login(Context ctx){
+    private void login(Context ctx) {
         var serializer = new Gson();
-        String reqJson = ctx.body();
-        var req = serializer.fromJson(reqJson, Map.class);
+        try {
+            var req = serializer.fromJson(ctx.body(), Map.class);
+            String username = (String) req.get("username");
+            String password = (String) req.get("password");
 
-        String username = (String) req.get("username");
-        String password = (String) req.get("password");
+            LoginRequest request = new LoginRequest(username, password);
+            LoginResult result = userService.login(request);
 
-        if (username == null || password == null ||
-                username.isEmpty() || password.isEmpty()) {
+            ctx.status(200);
+            ctx.result(serializer.toJson(Map.of(
+                "username", result.username(),
+                "authToken", result.authToken()
+            )));
+
+        } catch (BadRequestException e) {
             ctx.status(400);
             ctx.result(serializer.toJson(Map.of("message", "Error: bad request")));
-            return;
-        }
-
-        if (existingUsernames.contains(username)){
-            if (!password.equals(userPasswords.get(username))){
-                ctx.status(401);
-                ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
-                return;
-            }
-            else{
-                String authToken = java.util.UUID.randomUUID().toString();
-                authTokens.put(authToken, username);
-
-                ctx.status(200);
-                var res = Map.of("username", username, "authToken", authToken);
-                ctx.result(serializer.toJson(res));
-            }
-        }
-        else{
+        } catch (UnauthorizedException e) {
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
-            return;
+        } catch (DataAccessException e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(Map.of("message", "Error: " + e.getMessage())));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
-
     }
 
     private void register(Context ctx){
