@@ -216,18 +216,23 @@ public class Server {
 
     private void logout(Context ctx){
         var serializer = new Gson();
-        String authToken = ctx.header("authorization");
+        
 
-        if (!authTokens.containsKey(authToken)){
+        try{
+            String authToken = ctx.header("authorization");
+            LogoutRequest request = new LogoutRequest(authToken);
+            userService.logout(request);
+            ctx.status(200);
+            ctx.result("{}");
+        }
+        catch(UnauthorizedException e){
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
-            return;
         }
-
-        authTokens.remove(authToken);
-        ctx.status(200);
-        ctx.result("{}");
-
+        catch(DataAccessException e){
+            ctx.status(500);
+            ctx.result(serializer.toJson(Map.of("message", "Error: " + e.getMessage())));
+        }
     }
 
     private void login(Context ctx) {
