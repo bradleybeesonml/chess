@@ -26,6 +26,7 @@ public class Server {
     // Services
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
     private final UserService userService = new UserService(userDAO, authDAO);
+    private final GameService gameService = new GameService(gameDAO, authDAO);
     
 
     private final Set<String> existingUsernames = new HashSet<>();
@@ -163,26 +164,32 @@ public class Server {
 
     private void listGames(Context ctx){
         var serializer = new Gson();
-        String authToken = ctx.header("authorization");
+        try{
+            String authToken = ctx.header("authorization");
 
-        if (!authTokens.containsKey(authToken)){ // validate auth
+            ListGamesRequest request = new ListGamesRequest(authToken);
+            ListGamesResult result = gameService.listGames(request);
+
+            var gamesList = result.games().stream().map(game -> {
+                var gameMap = new HashMap<String, Object>();
+                gameMap.put("gameID", game.gameID());
+                gameMap.put("whiteUsername", game.whiteUsername());
+                gameMap.put("blackUsername", game.blackUsername());
+                gameMap.put("gameName", game.gameName());
+                return gameMap;
+            }).toList();
+
+            ctx.status(200);
+            ctx.result(serializer.toJson(Map.of("games", gamesList)));
+        }
+        catch(UnauthorizedException e){
             ctx.status(401);
             ctx.result(serializer.toJson(Map.of("message", "Error: unauthorized")));
-            return;
         }
-
-        List gamesList = games.values().stream().map(game -> {
-            var gameMap = new HashMap<String, Object>();
-            gameMap.put("gameID", game.gameID());
-            gameMap.put("blackUsername", game.blackUsername());
-            gameMap.put("whiteUsername", game.whiteUsername());
-            gameMap.put("gameName", game.gameName());
-            return gameMap;
-        }).toList();
-
-        ctx.status(200);
-        var res = Map.of("games", gamesList);
-        ctx.result(serializer.toJson(res));
+        catch(DataAccessException e){
+            ctx.status(500);
+            ctx.result(serializer.toJson(Map.of("message", "Error: " + e.getMessage())));
+        }
     }
 
     private void createGame(Context ctx){
