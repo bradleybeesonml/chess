@@ -36,7 +36,6 @@ public class UserServiceTest {
         assertEquals(username, result.username(), "Username should match the request");
         assertNotNull(result.authToken(), "Auth token should be generated");
         assertFalse(result.authToken().isEmpty(), "Auth token should not be empty");
-        
 
     }
 
