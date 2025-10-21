@@ -76,6 +76,25 @@ public class ChessPiece {
         }
     }
 
+    private Collection<ChessMove> singleMoves(ChessBoard board, ChessPosition myPosition, int[][] steps) {
+        List<ChessMove> moves = new ArrayList<>();
+
+        for (int[] step : steps) {
+            int newRow = myPosition.getRow() + step[0];
+            int newCol = myPosition.getColumn() + step[1];
+
+            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
+
+                if (pieceAtNewPosition == null || pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+            }
+        }
+        return moves;
+    }
+
     private Collection<ChessMove> continuousMoves(ChessBoard board, ChessPosition myPosition, int[][] directions) {
         List<ChessMove> moves = new ArrayList<>();
 
@@ -227,8 +246,7 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
-        List<ChessMove> moves = new ArrayList<>();
-        int[][] knightsteps = { //all possible movements of Knight
+        int[][] knightSteps = {
                 {2, 1},
                 {2, -1},
                 {1, 2},
@@ -238,23 +256,7 @@ public class ChessPiece {
                 {-2, 1},
                 {-2, -1}
         };
-        for (int[] knightstep : knightsteps) {
-            int newRow = myPosition.getRow() + knightstep[0];
-            int newCol = myPosition.getColumn() + knightstep[1];
-
-            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
-                ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
-
-                if (pieceAtNewPosition == null) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                }
-                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                }
-            }
-        }
-        return moves;
+        return singleMoves(board, myPosition, knightSteps);
     }
 
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
