@@ -56,12 +56,42 @@ public class GameServiceTest {
     @Order(2)
     @DisplayName("List Games - Unauthorized")
     void listGamesFail() throws Exception {
+        String username = "testuser";
+        String authToken = "authToken";
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+        Random random = new Random();
+        int numGames = random.nextInt(8) + 3; //create between 3 and 8 games
+
+        List<GameData> createdGames = new ArrayList<>();
+        for (int i = 0; i < numGames; i++) {
+            GameData game = gameDAO.insertGame("Rnadom game #: " + (i + 1));
+            createdGames.add(game);
+        }
+        assertThrows(UnauthorizedException.class, ()->{
+            ListGamesRequest request = new ListGamesRequest("Invalid Auth Token!");
+            ListGamesResult result = gameService.listGames(request);
+    });
+
     }
     
     @Test
     @Order(3)
     @DisplayName("Create Game - Success")
     void createGameSuccess() throws Exception {
+        String username = "testuser";
+        String authToken = "authToken";
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+        CreateGameRequest request = new CreateGameRequest(authToken, "Test Game");
+        CreateGameResult result = gameService.createGame(request);
+
+        GameData testGame = gameDAO.getGame(result.gameID());
+        assertNotNull(testGame);
+
+
     }
     
     @Test
