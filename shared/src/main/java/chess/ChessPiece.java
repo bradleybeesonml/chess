@@ -161,17 +161,21 @@ public class ChessPiece {
         if (this.getTeamColor() == ChessGame.TeamColor.BLACK) {
             int[] capturableColumns = {myPosition.getColumn()-1, myPosition.getColumn()+1};
             for (int column : capturableColumns) {
-                if (column <=8 && column >=1) {
-                    ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() - 1, column);
-                    ChessPiece enemyPiece = board.getPiece(enemyPosition);
-                    if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        if (myPosition.getRow()-1 == 1){
-                            addPromotionMoves(moves, myPosition, enemyPosition);
-                        }
-                        else {
-                            moves.add(new ChessMove(myPosition, enemyPosition, null));
-                        }
-                    }
+                if (column < 1 || column > 8) {
+                    continue;
+                }
+
+                ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() - 1, column);
+                ChessPiece enemyPiece = board.getPiece(enemyPosition);
+
+                if (enemyPiece == null || enemyPiece.getTeamColor() != ChessGame.TeamColor.WHITE) {
+                    continue;
+                }
+
+                if (myPosition.getRow() - 1 == 1) {
+                    addPromotionMoves(moves, myPosition, enemyPosition);
+                } else {
+                    moves.add(new ChessMove(myPosition, enemyPosition, null));
                 }
             }
             if (myPosition.getRow() == 7) {
@@ -200,19 +204,21 @@ public class ChessPiece {
         else if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
             int[] capturableColumns = {myPosition.getColumn()-1, myPosition.getColumn()+1};
             for (int column : capturableColumns) {
-                if (column >=1 && column <=8) {
-                    ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() + 1, column);
-                    ChessPiece enemyPiece = board.getPiece(enemyPosition);
-                    if (enemyPiece != null && enemyPiece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                        if (myPosition.getRow()+1 == 8){
-                            addPromotionMoves(moves, myPosition, enemyPosition);
+                if (column < 1 || column > 8) {
+                    continue;
+                }
 
-                        }
-                        else {
-                            moves.add(new ChessMove(myPosition, enemyPosition, null));
-                        }
+                ChessPosition enemyPosition = new ChessPosition(myPosition.getRow() + 1, column);
+                ChessPiece enemyPiece = board.getPiece(enemyPosition);
 
-                    }
+                if (enemyPiece == null || enemyPiece.getTeamColor() != ChessGame.TeamColor.BLACK) {
+                    continue;
+                }
+
+                if (myPosition.getRow() + 1 == 8) {
+                    addPromotionMoves(moves, myPosition, enemyPosition);
+                } else {
+                    moves.add(new ChessMove(myPosition, enemyPosition, null));
                 }
             }
             if (myPosition.getRow() == 2) {
