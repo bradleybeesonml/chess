@@ -91,20 +91,67 @@ public class GameServiceTest {
         GameData testGame = gameDAO.getGame(result.gameID());
         assertNotNull(testGame);
 
-
     }
     
     @Test
     @Order(4)
-    @DisplayName("Create Game - Bad Request")
+    @DisplayName("Create Game - Bad Request & Unauthorized")
     void createGameFail() throws Exception {
+        String username = "testuser";
+        String authToken = "authToken";
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+
+        assertThrows(UnauthorizedException.class, () -> {
+            CreateGameRequest request = new CreateGameRequest("Invalid AuthToken", "Test Game");
+            CreateGameResult result = gameService.createGame(request);
+
+        });
+
+        assertThrows(BadRequestException.class, () -> {
+            CreateGameRequest request = new CreateGameRequest(authToken, ""); //Game Name shouldn't be empty
+            CreateGameResult result = gameService.createGame(request);
+
+        });
+
     }
     
     @Test
     @Order(5)
     @DisplayName("Join Game - Success")
     void joinGameSuccess() throws Exception {
+        String whiteUsername = "whiteUsername";
+        String blackUsername = "blackUsername";
+        String authToken = "authToken";
+        String blackAuthToken = "blackAuthToken";
+        AuthData authData = new AuthData(authToken, whiteUsername);
+        AuthData blackAuthData = new AuthData(blackAuthToken, blackUsername);
+        authDAO.insertAuth(authData);
+        authDAO.insertAuth(blackAuthData);
+
+        GameData testGgame = gameDAO.insertGame("Test Chess Game");
+        int gameID = testGgame.gameID();
+
+        JoinGameRequest whitePlayerRequest = new JoinGameRequest(authToken, "WHITE", gameID);
+        gameService.joinGame(whitePlayerRequest);
+
+        GameData joinedGame = gameDAO.getGame(gameID);
+
+        assertEquals(whiteUsername, joinedGame.whiteUsername());
+        assertNull(joinedGame.blackUsername(), "Only white should've joined the game at this point");
+
+        //now join with black
+        JoinGameRequest blackPlayerRequest = new JoinGameRequest(blackAuthToken, "BLACK", gameID);
+        gameService.joinGame(blackPlayerRequest);
+
+        GameData sameGame = gameDAO.getGame(gameID);
+
+        assertEquals(blackUsername, sameGame.blackUsername());
+
     }
+
+
     
     @Test
     @Order(6)
