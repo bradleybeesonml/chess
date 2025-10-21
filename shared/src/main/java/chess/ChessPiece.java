@@ -260,8 +260,7 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
-        List<ChessMove> moves = new ArrayList<>();
-        int[][] kingsteps = { //all possible movements of King
+        int[][] kingSteps = {
                 {1, 0},
                 {1, 1},
                 {1, -1},
@@ -271,26 +270,7 @@ public class ChessPiece {
                 {-1, -1},
                 {-1, 1}
         };
-        for (int[] step : kingsteps) {
-            int newRow =  myPosition.getRow() + step[0];
-            int newCol =  myPosition.getColumn() + step[1];
-
-            if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
-                ChessPosition newPosition = new ChessPosition(newRow, newCol);
-                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
-
-                if (pieceAtNewPosition == null) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                }
-                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                }
-            }
-            else {
-                continue;
-            }
-        }
-        return moves;
+        return singleMoves(board, myPosition, kingSteps);
     }
 
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
