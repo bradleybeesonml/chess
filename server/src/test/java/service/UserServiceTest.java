@@ -15,7 +15,6 @@ public class UserServiceTest {
     
     @BeforeEach
     void setUp() {
-        // Create fresh DAO instances for each test to ensure isolation
         userDAO = new MemoryUserDAO();
         authDAO = new MemoryAuthDAO();
         userService = new UserService(userDAO, authDAO);
@@ -41,7 +40,7 @@ public class UserServiceTest {
 
     @Test
     @Order(1)
-    @DisplayName("Register User - Success")
+    @DisplayName("Register User - Bad request")
     void registerUserFail() {
         String username = "testuser";
         String password = null;
@@ -85,5 +84,45 @@ public class UserServiceTest {
             LoginResult result = userService.login(request);
         });
     }
+
+    @Test
+    @DisplayName("Logout - Success")
+    void logoutUserSuccess() throws Exception{
+        String authToken = "testauthtoken123";
+        String username = "testUser";
+
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+        LogoutRequest request = new LogoutRequest(authToken);
+        userService.logout(request);
+
+        AuthData logoutTest = authDAO.getAuth(authToken);
+        assertNull(logoutTest, "The authToken should've been removed by userService.logout");
+
+
+    }
+
+    @Test
+    @DisplayName("Logout - Unauthorized")
+    void logoutUserFail() throws Exception{
+        String authToken = "testauthtoken123";
+        String invalidAuthToken = "invalidtoken123";
+        String username = "testUser";
+
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+        LogoutRequest request = new LogoutRequest(invalidAuthToken);
+        userService.logout(request);
+
+        assertThrows(UnauthorizedException.class, ()-> {
+            AuthData logoutTest = authDAO.getAuth(authToken);
+        });
+
+
+
+    }
+
 
 }
