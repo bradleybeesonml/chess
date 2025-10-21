@@ -117,8 +117,7 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
-        List<ChessMove> moves = new ArrayList<>();
-        int[][] possibledirections = {
+        int[][] queenDirections = {
                 {1, 1},
                 {1, -1},
                 {-1, 1},
@@ -128,37 +127,7 @@ public class ChessPiece {
                 {-1, 0},
                 {0, -1}
         };
-        for (int[] direction : possibledirections) {
-            int rowStep = direction[0];
-            int colStep = direction[1];
-
-            int currentRow = myPosition.getRow() + rowStep;
-            int currentCol = myPosition.getColumn() + colStep;
-
-            while (currentRow >= 1 && currentRow <= 8 && currentCol >= 1 && currentCol <= 8) {
-                ChessPosition newPosition = new ChessPosition(currentRow, currentCol);
-                ChessPiece pieceAtNewPosition = board.getPiece(newPosition);
-
-                if (pieceAtNewPosition == null) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                }
-
-                else if (pieceAtNewPosition.getTeamColor() != this.getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, newPosition, null));
-                    break;
-                }
-                else {
-                    break;
-                }
-
-
-                currentRow += rowStep;
-                currentCol += colStep;
-            }
-
-        }
-        return moves;
-
+        return continuousMoves(board, myPosition, queenDirections);
     }
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
