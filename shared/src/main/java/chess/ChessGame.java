@@ -126,40 +126,38 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) throws IllegalArgumentException {
         ChessPosition kingPosition = null;
-        for (int row = 1; row <= 8; row++) { //get the current team's king position
+        for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
 
-                if (piece != null) {
-                    if (piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
-                        kingPosition = position;
-                        break;
-                    }
+                if (piece != null &&
+                        piece.getPieceType() == ChessPiece.PieceType.KING &&
+                        piece.getTeamColor() == teamColor) {
+                    kingPosition = position;
+                    break;
                 }
             }
         }
 
-        for (int row = 1; row <= 8; row++) { //iterate through all pieces on the board
+        for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition enemyPosition = new ChessPosition(row, col);
                 ChessPiece enemyPiece = board.getPiece(enemyPosition);
 
-                if (enemyPiece != null) {
-                    if (enemyPiece.getTeamColor() != teamColor) { //if the current piece is an enemy
-                        Collection<ChessMove> moves = enemyPiece.pieceMoves(board, enemyPosition);
-                        for (ChessMove move : moves) { //iterate through every move of the current enemy piece
-                            if (move.getEndPosition().equals(kingPosition)) {
-                                return true; //if the end position is the King's position, the king is in check
-                            }
-                        }
+                if (enemyPiece == null || enemyPiece.getTeamColor() == teamColor) {
+                    continue;
+                }
 
+                Collection<ChessMove> moves = enemyPiece.pieceMoves(board, enemyPosition);
+                for (ChessMove move : moves) {
+                    if (move.getEndPosition().equals(kingPosition)) {
+                        return true;
                     }
                 }
             }
         }
         return false;
-
     }
 
     /**
