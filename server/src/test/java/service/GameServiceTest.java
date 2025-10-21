@@ -157,5 +157,24 @@ public class GameServiceTest {
     @Order(6)
     @DisplayName("Join Game - Already Taken")
     void joinGameFail() throws Exception {
+        String username1 = "player1";
+        String username2 = "player2";
+        String authToken1 = "auth1";
+        String authToken2 = "auth2";
+
+        authDAO.insertAuth(new AuthData(authToken1, username1));
+        authDAO.insertAuth(new AuthData(authToken2, username2));
+
+        GameData game = gameDAO.insertGame("Test Game");
+        int gameID = game.gameID();
+
+        JoinGameRequest firstRequest = new JoinGameRequest(authToken1, "WHITE", gameID);
+        gameService.joinGame(firstRequest);
+
+        JoinGameRequest secondRequest = new JoinGameRequest(authToken2, "WHITE", gameID);
+
+        assertThrows(AlreadyTakenException.class, () -> {
+            gameService.joinGame(secondRequest);
+        });
     }
 }
