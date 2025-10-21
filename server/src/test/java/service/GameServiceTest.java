@@ -3,6 +3,11 @@ package service;
 import dataaccess.*;
 import model.*;
 import org.junit.jupiter.api.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -25,6 +30,26 @@ public class GameServiceTest {
     @Order(1)
     @DisplayName("List Games - Success")
     void listGamesSuccess() throws Exception {
+        String username = "testuser";
+        String authToken = "authToken";
+        AuthData authData = new AuthData(authToken, username);
+        authDAO.insertAuth(authData);
+
+        Random random = new Random();
+        int numGames = random.nextInt(8) + 3; //create between 3 and 8 games
+
+        List<GameData> createdGames = new ArrayList<>();
+        for (int i = 0; i < numGames; i++) {
+            GameData game = gameDAO.insertGame("Rnadom game #: " + (i + 1));
+            createdGames.add(game);
+        }
+
+        ListGamesRequest request = new ListGamesRequest(authToken);
+        ListGamesResult result = gameService.listGames(request);
+
+        assertNotNull(result, "Should contain at least 3 games");
+        assertEquals(numGames, result.games().size(),
+                "Make sure all created games are listed");
     }
     
     @Test
