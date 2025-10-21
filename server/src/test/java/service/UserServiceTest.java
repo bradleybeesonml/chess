@@ -114,15 +114,11 @@ public class UserServiceTest {
         authDAO.insertAuth(authData);
 
         LogoutRequest request = new LogoutRequest(invalidAuthToken);
-        userService.logout(request);
-
         assertThrows(UnauthorizedException.class, ()-> {
-            AuthData logoutTest = authDAO.getAuth(authToken);
+            userService.logout(request);
         });
-
-
-
     }
+
 
 
 }
