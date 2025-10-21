@@ -1,18 +1,12 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
-import model.GameData;
-import org.jetbrains.annotations.NotNull;
 import dataaccess.*;
 import service.*;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.stream.Collectors.toList;
 
 public class Server {
 
@@ -89,29 +83,6 @@ public class Server {
         }
     }
 
-    @NotNull
-    private static GameData getGameData(String color, GameData existingGame, String username) {
-        GameData updatedGame;
-        if (color.equals("WHITE")) {
-            updatedGame = new GameData(
-                    existingGame.gameID(),
-                    username,
-                    existingGame.blackUsername(),
-                    existingGame.gameName(),
-                    existingGame.game()
-            );
-        }
-        else {
-            updatedGame = new GameData(
-                    existingGame.gameID(),
-                    existingGame.whiteUsername(),
-                    username,
-                    existingGame.gameName(),
-                    existingGame.game()
-            );
-        }
-        return updatedGame;
-    }
 
     private void listGames(Context ctx){
         var serializer = new Gson();
