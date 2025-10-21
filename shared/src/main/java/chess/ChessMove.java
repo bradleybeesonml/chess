@@ -50,8 +50,12 @@ public class ChessMove {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj){
+            return true
+            ;}
+        if (obj == null || getClass() != obj.getClass()){
+            return false;
+        }
         ChessMove chessMove = (ChessMove) obj;
         return java.util.Objects.equals(startPosition, chessMove.startPosition) &&
                 java.util.Objects.equals(endPosition, chessMove.endPosition) &&
