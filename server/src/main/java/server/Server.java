@@ -13,7 +13,7 @@ public class Server {
     private final Javalin server;
     
     // Data Access Objects
-    private final UserDAO userDAO = new MySQLUserDAO();
+    private final UserDAO userDAO = new MemoryUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
     private final GameDAO gameDAO = new MemoryGameDAO();
 
