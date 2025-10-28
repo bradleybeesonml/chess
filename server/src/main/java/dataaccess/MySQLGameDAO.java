@@ -16,11 +16,15 @@ public class MySQLGameDAO implements GameDAO {
         try {
             DatabaseManager.createDatabase();
             try (var conn = DatabaseManager.getConnection()) {
-                var createUserTable = """
+                var createGamesTable = """
                     CREATE TABLE IF NOT EXISTS games (
-                        IMPLEMENT COLUMNS
+                    game_id INT AUTO_INCREMENT PRIMARY KEY,
+                    white_username VARCHAR(255),
+                    black_username VARCHAR(255),
+                    game_name VARCHAR(255) NOT NULL,
+                    game_status JSON NOT NULL
                     )""";
-                try (var statement = conn.prepareStatement(createUserTable)) {
+                try (var statement = conn.prepareStatement(createGamesTable)) {
                     statement.executeUpdate();
                 }
             }

@@ -13,9 +13,9 @@ public class Server {
     private final Javalin server;
     
     // Data Access Objects
-    private final UserDAO userDAO = new MemoryUserDAO();
+    private final UserDAO userDAO = new MySQLUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
+    private final GameDAO gameDAO = new MySQLGameDAO();
 
     // Services
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
