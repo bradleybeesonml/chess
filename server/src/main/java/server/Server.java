@@ -14,7 +14,7 @@ public class Server {
     
     // Data Access Objects
     private final UserDAO userDAO = new MySQLUserDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final AuthDAO authDAO = new MySQLAuthDAO();
     private final GameDAO gameDAO = new MySQLGameDAO();
 
     // Services
