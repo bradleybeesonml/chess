@@ -58,6 +58,31 @@ public class UserDAOTest {
     }
 
     @Test
+    @DisplayName("Get User - Negative Case")
+    void getUserNegative() throws DataAccessException{
+        String testUsername = "negativeTestUser";
+        String testPassword = "unhashedPassword";
+        String testEmail = "test@email.com";
+
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, testUsername);
+                ps.setString(2, testPassword);
+                ps.setString(3, testEmail);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't insert into users.", e);
+        }
+
+
+        UserData resultUser = userDAO.getUser("ThisIsn'tARealUsername");
+        assertNull(resultUser, "Should return null if no user exists for the specified username.");
+
+    }
+
+    @Test
     @DisplayName("Create User - Success")
     void createUserSuccess() throws DataAccessException{
         String testUsername = "testUser";
