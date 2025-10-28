@@ -108,7 +108,7 @@ public class UserDAOTest {
 
         assertThrows(DataAccessException.class, ()-> {
             userDAO.createUser(testUserFail);
-            userDAO.createUser(testUserFail); // double insert of the same user
+            userDAO.createUser(testUserFail); // double insert of the same user should throw a DataAccessException
 
         });
 

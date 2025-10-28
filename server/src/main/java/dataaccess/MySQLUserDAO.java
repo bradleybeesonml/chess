@@ -45,7 +45,7 @@ public class MySQLUserDAO implements UserDAO {
             try (var getUserByUsername = conn.prepareStatement(statement)) {
                 getUserByUsername.setString(1, username);
                 var result = getUserByUsername.executeQuery();
-                if(result.next()) { //checking if the result was null kept giving a sql error, changed to reslt.next(
+                if(result.next()) { //checking if the result was null kept giving a sql error, changed to result.next(
                     return new UserData(
                             result.getString("username"),
                             result.getString("password"),
