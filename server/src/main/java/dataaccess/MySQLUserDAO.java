@@ -12,8 +12,28 @@ public class MySQLUserDAO implements UserDAO {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        throw new DataAccessException("Not implemented yet");
-    }
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        try (var conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(true);
+            System.out.println("Creating user: " + user.username());
+            var statement = """
+                    INSERT INTO users (username, password, email)
+                    VALUES (?, ?, ?)
+                    """;
+            try (var insertUser = conn.prepareStatement(statement)) {
+                insertUser.setString(1, user.username());
+                insertUser.setString(2, hashedPassword);
+                insertUser.setString(3, user.email());
+                insertUser.executeUpdate();
+            }
+            catch (SQLException e) {
+                throw new DataAccessException("Couldn't insert user (probably already taken)");
+            }
+        }
+        catch (SQLException e) {
+            throw new DataAccessException("Couldn't create user" + e.getMessage(), e);
+            }
+        }
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
@@ -46,7 +66,7 @@ public class MySQLUserDAO implements UserDAO {
     @Override
     public void clear() throws DataAccessException{
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "TRUNCATE TABLE users";
+            var statement = "DELETE FROM users";
             try (var clearUsers = conn.prepareStatement(statement)) {
                 clearUsers.executeUpdate();
             }

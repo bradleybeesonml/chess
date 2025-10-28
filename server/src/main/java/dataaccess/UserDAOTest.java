@@ -15,13 +15,9 @@ public class UserDAOTest {
     private UserDAO userDAO;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws DataAccessException {
         userDAO = new MySQLUserDAO();
-        try {
-            userDAO.clear();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        userDAO.clear(); //drop all rows from user table
     }
 
     @Test
@@ -52,6 +48,46 @@ public class UserDAOTest {
 
         assertNotNull(resultUser, "Retrieved user should not be null");
         assertEquals(testUsername, resultUser.username(), "Username should be bradley");
+
+        try {
+            userDAO.clear();
+        } catch (DataAccessException e) { //commenting out to avoid clearing
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Test
+    @DisplayName("Create User - Success") //Passing all tests, but I can't figure out why the database doesn't still have a user after running the tests!
+    void createUserSuccess() throws DataAccessException{
+        String testUsername = "testUser";
+        String testPassword = "plaintextpassword";
+        String testEmail = "test@email.com";
+        UserData testUser = new UserData(testUsername, testPassword, testEmail);
+
+        userDAO.createUser(testUser);
+        UserData createdUser = userDAO.getUser("testUser");
+
+        assertNotNull(createdUser, "Retrieved user should not be null");
+        System.out.println("Created User:" + createdUser.username());
+        assertEquals(testUsername, createdUser.username(), "Username should match.");
+    }
+
+    @Test
+    @DisplayName("Create User - Negative Case")
+    void createUserNegative() throws DataAccessException{
+        String testUsername = "testUserFail";
+        String testPassword = "plaintextpasswordFail";
+        String testEmail = "test@emailFail.com";
+        UserData testUserFail = new UserData(testUsername, testPassword, testEmail);
+
+        assertThrows(DataAccessException.class, ()-> {
+            userDAO.createUser(testUserFail);
+            userDAO.createUser(testUserFail); // double insert of the same user
+
+        });
+
+
     }
 
 }
