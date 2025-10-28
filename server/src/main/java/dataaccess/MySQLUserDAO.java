@@ -17,7 +17,30 @@ public class MySQLUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        throw new DataAccessException("Not implemented yet");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = """
+                SELECT username, password, email
+                FROM users
+                WHERE username = ?;
+                """;
+
+            try (var getUserByUsername = conn.prepareStatement(statement)) {
+                getUserByUsername.setString(1, username);
+                var result = getUserByUsername.executeQuery();
+                if(result.next()) { //checking if the result was null kept giving a sql error, changed to reslt.next(
+                    return new UserData(
+                            result.getString("username"),
+                            result.getString("password"),
+                            result.getString("email")
+                    );
+                }
+                else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
