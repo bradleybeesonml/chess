@@ -14,8 +14,6 @@ public class MySQLUserDAO implements UserDAO {
     public void createUser(UserData user) throws DataAccessException {
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         try (var conn = DatabaseManager.getConnection()) {
-            conn.setAutoCommit(true);
-            System.out.println("Creating user: " + user.username());
             var statement = """
                     INSERT INTO users (username, password, email)
                     VALUES (?, ?, ?)

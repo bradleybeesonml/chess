@@ -51,14 +51,14 @@ public class UserDAOTest {
 
         try {
             userDAO.clear();
-        } catch (DataAccessException e) { //commenting out to avoid clearing
+        } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
 
     }
 
     @Test
-    @DisplayName("Create User - Success") //Passing all tests, but I can't figure out why the database doesn't still have a user after running the tests!
+    @DisplayName("Create User - Success")
     void createUserSuccess() throws DataAccessException{
         String testUsername = "testUser";
         String testPassword = "plaintextpassword";
