@@ -21,8 +21,15 @@ public class MySQLUserDAO implements UserDAO {
     }
 
     @Override
-    public void clear() throws DataAccessException {
-        throw new DataAccessException("Not implemented yet");
+    public void clear() throws DataAccessException{
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "TRUNCATE TABLE users";
+            try (var clearUsers = conn.prepareStatement(statement)) {
+                clearUsers.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void configureDatabase() {
