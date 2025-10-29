@@ -84,9 +84,6 @@ public class AuthDAOTest {
 
         AuthData resultAuth = authDAO.getAuth("nonexistentAuthToken");
         assertNull(resultAuth, "Auth should return null if auth table is empty.");
-
-
-
     }
 
     @Test
@@ -130,6 +127,38 @@ public class AuthDAOTest {
                 System.out.println("Row count: " + rowCount);
                 assertEquals(0, rowCount);
             }
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't get count from auth");
+        }
+
+    }
+
+    @Test
+    @DisplayName("Delete Auth - success")
+    void deleteAuthSuccess() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "INSERT INTO auth (auth_token, username) " +
+                            "VALUES ('testDeleteAuthToken', 'testUsername')"
+            );
+        }
+
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't insert into auth");
+        }
+
+        System.out.println("Initial Row count: 1");
+        authDAO.deleteAuth("testDeleteAuthToken");
+        System.out.println("Deleting authToken: testDeleteAuthToken");
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement();
+             var rs = stmt.executeQuery("SELECT * FROM auth WHERE auth_token = 'testDeleteAuthToken'")) {
+
+            assertFalse(rs.next());
+            System.out.println("AuthToken Deleted.");
         }
         catch(SQLException e){
             throw new DataAccessException("Couldn't get count from auth");
