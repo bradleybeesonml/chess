@@ -30,6 +30,20 @@ public class MySQLAuthDAO implements AuthDAO{
 
     @Override
     public void insertAuth(AuthData auth) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = """
+                    INSERT INTO auth (auth_token, username)
+                    VALUES (?, ?)
+                    """;
+            try (var insertAuth = conn.prepareStatement(statement)) {
+                insertAuth.setString(1, auth.authToken());
+                insertAuth.setString(2, auth.username());
+                insertAuth.executeUpdate();
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't insert auth");
+        }
 
     }
 
@@ -45,6 +59,7 @@ public class MySQLAuthDAO implements AuthDAO{
 
     @Override
     public void clear() throws DataAccessException {
+
 
     }
 }
