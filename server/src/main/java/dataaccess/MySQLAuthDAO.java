@@ -30,6 +30,17 @@ public class MySQLAuthDAO implements AuthDAO{
 
     @Override
     public void insertAuth(AuthData auth) throws DataAccessException {
+
+        if (auth == null) {
+            throw new DataAccessException("AuthData cannot be null!");
+        }
+        if (auth.authToken() == null || auth.authToken().trim().isEmpty()) {
+            throw new DataAccessException("Auth token must not be null or an empty string");
+        }
+        if (auth.username() == null || auth.username().trim().isEmpty()) {
+            throw new DataAccessException("Username must not be an empty string or null object ");
+        }
+
         try (var conn = DatabaseManager.getConnection()) {
             var statement = """
                     INSERT INTO auth (auth_token, username)

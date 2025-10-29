@@ -43,6 +43,21 @@ public class AuthDAOTest {
     }
 
     @Test
+    @DisplayName("Insert Auth - Negative Case")
+    void insertAuthTestNegative() throws DataAccessException {
+        AuthData testAuthData = new AuthData("", "");
+
+        assertThrows(DataAccessException.class, ()->
+        authDAO.insertAuth(testAuthData));
+
+        AuthData testAuthDataNull = new AuthData(null, null);
+
+        assertThrows(DataAccessException.class, ()->
+                authDAO.insertAuth(testAuthDataNull));
+
+    }
+
+    @Test
     @DisplayName("Get Auth - Success")
     void getAuthTest() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection();
@@ -60,6 +75,17 @@ public class AuthDAOTest {
         AuthData resultAuth = authDAO.getAuth("testAuthToken");
         System.out.println("Returned auth: " + resultAuth);
         assertNotNull(resultAuth, "GetAuth should retrieve the test authdata");
+
+    }
+
+    @Test
+    @DisplayName("Get Auth - Negative Case")
+    void getAuthTestNegative() throws DataAccessException {
+
+        AuthData resultAuth = authDAO.getAuth("nonexistentAuthToken");
+        assertNull(resultAuth, "Auth should return null if auth table is empty.");
+
+
 
     }
 
