@@ -25,7 +25,42 @@ public class AuthDAOTest {
     void insertAuthTest() throws DataAccessException {
         AuthData testAuthData = new AuthData("testAuthToken", "testUsername");
         authDAO.insertAuth(testAuthData);
-        //ADD Test Case - querying database through the shell shows that the authData is being inserted correctly
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement();
+             var rs = stmt.executeQuery("SELECT COUNT(*) FROM auth")) {
+
+            if (rs.next()) {
+                int rowCount = rs.getInt(1);
+                System.out.println("Checking rows after insert: " + rowCount);
+                assertEquals(1, rowCount);
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't get count from auth");
+        }
+
+    }
+
+    @Test
+    @DisplayName("Get Auth - Success")
+    void getAuthTest() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "INSERT INTO auth (auth_token, username) " +
+                            "VALUES ('testAuthToken', 'testUsername')"
+            );
+        }
+
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't insert into auth");
+        }
+
+        AuthData resultAuth = authDAO.getAuth("testAuthToken");
+        System.out.println("Returned auth: " + resultAuth);
+        assertNotNull(resultAuth, "GetAuth should retrieve the test authdata");
+
     }
 
     @Test
