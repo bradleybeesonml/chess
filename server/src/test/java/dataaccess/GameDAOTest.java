@@ -60,4 +60,12 @@ public class GameDAOTest {
 
 
     }
+
+    @Test
+    @DisplayName("Insert Game - Success")
+    void insertGameSuccess() throws DataAccessException {
+
+
+
+    }
 }

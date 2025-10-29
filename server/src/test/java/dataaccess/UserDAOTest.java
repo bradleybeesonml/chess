@@ -64,8 +64,8 @@ public class UserDAOTest {
         String testEmail = "test@email.com";
 
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-            try (var ps = conn.prepareStatement(statement)) {
+            var getUserNegativeStatement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+            try (var ps = conn.prepareStatement(getUserNegativeStatement)) {
                 ps.setString(1, testUsername);
                 ps.setString(2, testPassword);
                 ps.setString(3, testEmail);
