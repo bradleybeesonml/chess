@@ -28,4 +28,52 @@ public class AuthDAOTest {
         //ADD Test Case - querying database through the shell shows that the authData is being inserted correctly
     }
 
+    @Test
+    @DisplayName("Clear Auth")
+    void clearAuth() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "INSERT INTO auth (auth_token, username) " +
+                            "VALUES ('testAuthToken', 'testUsername')"
+            );
+        }
+
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't insert into auth");
+        }
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement();
+             var rs = stmt.executeQuery("SELECT COUNT(*) FROM auth")) {
+
+            if (rs.next()) {
+                int rowCount = rs.getInt(1);
+                System.out.println("Row count: " + rowCount);
+                assertEquals(1, rowCount);
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't get count from auth");
+        }
+
+        authDAO.clear();
+        System.out.println("Clearing Auth...");
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement();
+             var rs = stmt.executeQuery("SELECT COUNT(*) FROM auth")) {
+
+            if (rs.next()) {
+                int rowCount = rs.getInt(1);
+                System.out.println("Row count: " + rowCount);
+                assertEquals(0, rowCount);
+            }
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't get count from auth");
+        }
+
+    }
+
 }

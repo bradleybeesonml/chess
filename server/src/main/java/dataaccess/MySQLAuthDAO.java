@@ -59,7 +59,14 @@ public class MySQLAuthDAO implements AuthDAO{
 
     @Override
     public void clear() throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "DELETE FROM auth";
+            try (var clearAuth = conn.prepareStatement(statement)) {
+                clearAuth.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
