@@ -87,6 +87,9 @@ public class MySQLAuthDAO implements AuthDAO{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
+        if(authToken == null || authToken.isEmpty()){
+            throw new DataAccessException("Invalid authToken, cannot delete.");
+        }
         try (var conn = DatabaseManager.getConnection()) {
             var statement = """
                 DELETE FROM auth

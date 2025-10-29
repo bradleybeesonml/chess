@@ -166,4 +166,25 @@ public class AuthDAOTest {
 
     }
 
+    @Test
+    @DisplayName("Delete Auth - success")
+    void deleteAuthNegative() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "INSERT INTO auth (auth_token, username) " +
+                            "VALUES ('testDeleteAuthTokenNegative', 'testUsername')"
+            );
+        }
+        catch(SQLException e){
+            throw new DataAccessException("Couldn't insert into auth to test deleteAuth method.");
+        }
+
+        assertThrows(DataAccessException.class, ()->
+            authDAO.deleteAuth(""));
+
+
+
+    }
+
 }
