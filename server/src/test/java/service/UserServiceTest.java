@@ -1,6 +1,9 @@
 package service;
 
 import dataaccess.*;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
 import model.*;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,4 +1,6 @@
 package dataaccess;
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.AuthDAO;
 import model.AuthData;
 import java.util.HashMap;
 import java.util.Map;

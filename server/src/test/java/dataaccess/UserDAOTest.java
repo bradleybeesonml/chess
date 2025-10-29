@@ -1,10 +1,9 @@
 package dataaccess;
 
-import dataaccess.*;
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.UserDAO;
 import model.*;
 import org.junit.jupiter.api.*;
-
-import javax.xml.crypto.Data;
 
 import java.sql.SQLException;
 

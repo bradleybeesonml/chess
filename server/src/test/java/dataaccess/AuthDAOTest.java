@@ -1,7 +1,8 @@
 package dataaccess;
 
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.AuthDAO;
 import model.AuthData;
-import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -167,7 +168,7 @@ public class AuthDAOTest {
     }
 
     @Test
-    @DisplayName("Delete Auth - success")
+    @DisplayName("Delete Auth - Negative")
     void deleteAuthNegative() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection();
              var stmt = conn.createStatement()) {
@@ -182,8 +183,6 @@ public class AuthDAOTest {
 
         assertThrows(DataAccessException.class, ()->
             authDAO.deleteAuth(""));
-
-
 
     }
 

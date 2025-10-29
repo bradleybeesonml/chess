@@ -1,7 +1,9 @@
 package dataaccess;
 
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.GameDAO;
 import model.GameData;
-import model.UserData;
+
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +57,14 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void clear() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "DELETE FROM games";
+            try (var clearAuth = conn.prepareStatement(statement)) {
+                clearAuth.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }

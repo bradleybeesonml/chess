@@ -1,4 +1,6 @@
 package dataaccess;
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.GameDAO;
 import model.GameData;
 import chess.ChessGame;
 import java.util.*;

@@ -1,4 +1,9 @@
 package service;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.UserDAO;
 import model.*;
 import dataaccess.*;
 import java.util.UUID;
@@ -13,7 +18,7 @@ public class UserService {
 
     }
 
-    public RegisterResult register(RegisterRequest request) throws BadRequestException, AlreadyTakenException, DataAccessException{
+    public RegisterResult register(RegisterRequest request) throws BadRequestException, AlreadyTakenException, DataAccessException {
         if (request.username() == null || request.password() == null || request.email() == null ||
                 request.username().isEmpty() || request.password().isEmpty() || request.email().isEmpty()) {
             throw new BadRequestException("Error: bad request");

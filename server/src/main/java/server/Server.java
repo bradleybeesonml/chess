@@ -1,6 +1,12 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
+import dataaccess.interfaces.AuthDAO;
+import dataaccess.interfaces.GameDAO;
+import dataaccess.interfaces.UserDAO;
 import io.javalin.*;
 import io.javalin.http.Context;
 import dataaccess.*;
