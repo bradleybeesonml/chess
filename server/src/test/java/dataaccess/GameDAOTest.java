@@ -52,20 +52,59 @@ public class GameDAOTest {
              var rs = stmt.executeQuery("SELECT * FROM games")) {
 
             assertFalse(rs.next());
+            System.out.println("No rows returned. Games table cleared successfully.");
         }
         catch(SQLException e){
-            throw new DataAccessException("Couldn't get count from auth");
+            throw new DataAccessException("Couldn't SELECT rows from games.");
         }
-
-
-
     }
 
     @Test
     @DisplayName("Insert Game - Success")
     void insertGameSuccess() throws DataAccessException {
+        String testGameName = "Test Chess Game";
 
+        GameData insertedGame = gameDAO.insertGame(testGameName);
 
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement("SELECT COUNT(*) FROM games WHERE game_name = ?")) {
+
+            stmt.setString(1, testGameName);
+            var rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int rowCount = rs.getInt(1);
+                System.out.println("Games with name [" + testGameName + "]: " + rowCount);
+                assertEquals(1, rowCount, "Should have exactly one game with the test name");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't verify game insertion", e);
+        }
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement("SELECT game_id, game_name, game_status FROM games WHERE game_name = ?")) {
+
+            stmt.setString(1, testGameName);
+            var rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int dbGameId = rs.getInt("game_id");
+                String dbGameName = rs.getString("game_name");
+                String dbGameStatus = rs.getString("game_status");
+
+                assertNotNull(dbGameStatus, "Game status json shouldn't be null");
+
+                Gson gson = new Gson();
+                ChessGame deserializedGame = gson.fromJson(dbGameStatus, ChessGame.class);
+                assertNotNull(deserializedGame, "Deserialized game shouldn't be null");
+
+                System.out.println("Successfully inserted and verified game: " + dbGameName + " with ID: " + dbGameId);
+            } else {
+                throw new DataAccessException("Couldn't retrieve inserted game!");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't retrieve inserted game!", e);
+        }
 
     }
 }

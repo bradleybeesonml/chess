@@ -1,10 +1,13 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.exceptions.DataAccessException;
 import dataaccess.interfaces.GameDAO;
 import model.GameData;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,7 +40,31 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public GameData insertGame(String gameName) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = """
+                    INSERT INTO games (game_name, game_status)
+                    VALUES (?, ?)
+                    """;
+            try (var insertGameData = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+                var gson = new Gson();
+                var newGame = new ChessGame();
+                var gameJson = gson.toJson(newGame);
+                
+                insertGameData.setString(1, gameName);
+                insertGameData.setString(2, gameJson);
+                insertGameData.executeUpdate();
+                
+                var generatedKeys = insertGameData.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int gameId = generatedKeys.getInt(1);
+                    return new GameData(gameId, null, null, gameName, newGame);
+                } else {
+                    throw new DataAccessException("Failed to retrieve generated game ID");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't insert game: " + e.getMessage());
+        }
     }
 
     @Override
