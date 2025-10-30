@@ -40,6 +40,9 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public GameData insertGame(String gameName) throws DataAccessException {
+        if(gameName == null || gameName.isEmpty()){
+            throw new DataAccessException("gameName cannot be null or an empty string.");
+        }
         try (var conn = DatabaseManager.getConnection()) {
             var statement = """
                     INSERT INTO games (game_name, game_status)

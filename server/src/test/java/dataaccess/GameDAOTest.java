@@ -107,4 +107,15 @@ public class GameDAOTest {
         }
 
     }
+
+    @Test
+    @DisplayName("Insert Game - Success")
+    void insertGameNegative() throws DataAccessException {
+        String testGameName = "";
+
+        assertThrows(DataAccessException.class, ()->{
+            GameData insertedGame = gameDAO.insertGame(testGameName);
+                });
+
+    }
 }
