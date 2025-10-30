@@ -11,6 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -160,8 +162,17 @@ public class GameDAOTest {
 
     @Test
     @DisplayName("List Games - Success")
-    void listGamesTest() throws DataAccessException {
+    void listGamesMultiple() throws DataAccessException {
+        GameData game1 = gameDAO.insertGame("Game One Test");
+        GameData game2 = gameDAO.insertGame("Game Tow Test");
+        GameData game3 = gameDAO.insertGame("Game Three Test");
 
+        Collection<GameData> games = gameDAO.listGames();
 
+        assertNotNull(games, "Games should not be null");
+        assertEquals(3, games.size(), "Should have 3 games");
+
+        System.out.println("Successfully listed " + games.size() + " games");
+        System.out.println(games);
     }
 }
