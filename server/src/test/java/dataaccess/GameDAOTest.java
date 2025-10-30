@@ -21,7 +21,7 @@ public class GameDAOTest {
     @BeforeEach
     void setUp() throws DataAccessException {
         gameDAO = new MySQLGameDAO();
-        gameDAO.clear(); //drop all rows from auth table
+        gameDAO.clear(); //drop all rows from games table
     }
 
     @Test
@@ -109,7 +109,7 @@ public class GameDAOTest {
     }
 
     @Test
-    @DisplayName("Insert Game - Success")
+    @DisplayName("Insert Game - Negative Case (Empty gameName string")
     void insertGameNegative() throws DataAccessException {
         String testGameName = "";
 
@@ -118,4 +118,47 @@ public class GameDAOTest {
                 });
 
     }
+
+    @Test
+    @DisplayName("Get Game - Success")
+    void getGameTest() throws DataAccessException {
+
+        ChessGame getTestGame = new ChessGame();
+        String gameJson = new Gson().toJson(getTestGame);
+
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "INSERT INTO games (game_id, white_username, black_username, game_name, game_status) VALUES (?, ?, ?, ?, ?)";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, 9991);
+                ps.setString(2, "testGetWhiteUsername");
+                ps.setString(3, "testGetBlackUsername");
+                ps.setString(4, "testGetGame1");
+                ps.setString(5, gameJson);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't insert test game", e);
+        }
+
+        GameData returnedGame = gameDAO.getGame(9991);
+
+        assertNotNull(returnedGame);
+        System.out.println("Succesfully returned GameData :" + returnedGame);
+        assertEquals(9991, returnedGame.gameID());
+        assertEquals("testGetGame1", returnedGame.gameName());
+
+    }
+
+    @Test
+    @DisplayName("Get Game - Negative Case")
+    void getGameTestNegative() throws DataAccessException {
+        assertThrows(DataAccessException.class, ()->{
+            GameData returnedGame = gameDAO.getGame(1);
+        });
+
+    }
+
+
+
+
 }
