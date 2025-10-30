@@ -8,6 +8,7 @@ import model.GameData;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -104,7 +105,31 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        var games = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = """
+                SELECT game_id, white_username, black_username, game_name, game_status
+                FROM games
+                """;
+            try (var listGamesStmt = conn.prepareStatement(statement)) {
+                var rs = listGamesStmt.executeQuery();
+                var gson = new Gson();
+
+                while (rs.next()) {
+                    var chessGame = gson.fromJson(rs.getString("game_status"), ChessGame.class);
+                    games.add(new GameData(
+                            rs.getInt("game_id"),
+                            rs.getString("white_username"),
+                            rs.getString("black_username"),
+                            rs.getString("game_name"),
+                            chessGame
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't list games.");
+        }
+        return games;
     }
 
     @Override

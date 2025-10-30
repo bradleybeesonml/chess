@@ -158,7 +158,10 @@ public class GameDAOTest {
 
     }
 
+    @Test
+    @DisplayName("List Games - Success")
+    void listGamesTest() throws DataAccessException {
 
 
-
+    }
 }
