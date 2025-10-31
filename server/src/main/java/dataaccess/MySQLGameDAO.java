@@ -72,7 +72,7 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        if(gameID < 1234){
+        if(gameID < 0){
             throw new DataAccessException("Invalid gameID");
         }
         try (var conn = DatabaseManager.getConnection()) {

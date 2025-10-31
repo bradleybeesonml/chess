@@ -155,7 +155,7 @@ public class GameDAOTest {
     @DisplayName("Get Game - Negative Case")
     void getGameTestNegative() throws DataAccessException {
         assertThrows(DataAccessException.class, ()->{
-            GameData returnedGame = gameDAO.getGame(1);
+            GameData returnedGame = gameDAO.getGame(-78);
         });
 
     }
