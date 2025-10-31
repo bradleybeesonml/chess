@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class MySQLGameDAO implements GameDAO {
 
@@ -138,6 +137,27 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = """
+                UPDATE games
+                SET white_username = ?, black_username = ?, game_name = ?, game_status = ?
+                WHERE game_id = ?
+                """;
+            try (var updateGame = conn.prepareStatement(statement)) {
+                var gson = new Gson();
+                var gameStatusJSON = gson.toJson(game.game());
+
+                updateGame.setString(1, game.whiteUsername());
+                updateGame.setString(2, game.blackUsername());
+                updateGame.setString(3, game.gameName());
+                updateGame.setString(4, gameStatusJSON);
+                updateGame.setInt(5, gameID);
+
+                updateGame.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't update game: " + e.getMessage());
+        }
 
     }
 
