@@ -194,4 +194,27 @@ public class GameDAOTest {
             gameDAO.listGames();
         }, "Incorrect json format should throw data access exception");
     }
+
+    @Test
+    @DisplayName("UpdateGame - Success")
+    void updateGameTest() throws DataAccessException {
+        GameData originalGame = gameDAO.insertGame("Initial game instance");
+        int gameId = originalGame.gameID(); //get game id from gamedatq model
+
+        ChessGame gameToUpdate = new ChessGame();
+        GameData dataToUpdateFrom = new GameData(gameId, "whiteTest", "blackTest", "newName", gameToUpdate);
+
+        //update game
+        gameDAO.updateGame(gameId, dataToUpdateFrom);
+
+        //validate
+        GameData updatedGame = gameDAO.getGame(gameId);
+
+        assertNotNull(updatedGame);
+        assertEquals("whiteTest", updatedGame.whiteUsername());
+
+
+    }
+
+
 }
