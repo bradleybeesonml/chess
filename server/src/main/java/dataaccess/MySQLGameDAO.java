@@ -116,18 +116,22 @@ public class MySQLGameDAO implements GameDAO {
                 var gson = new Gson();
 
                 while (rs.next()) {
-                    var chessGame = gson.fromJson(rs.getString("game_status"), ChessGame.class);
-                    games.add(new GameData(
-                            rs.getInt("game_id"),
-                            rs.getString("white_username"),
-                            rs.getString("black_username"),
-                            rs.getString("game_name"),
-                            chessGame
-                    ));
+                    try {
+                        var chessGame = gson.fromJson(rs.getString("game_status"), ChessGame.class);
+                        games.add(new GameData(
+                                rs.getInt("game_id"),
+                                rs.getString("white_username"),
+                                rs.getString("black_username"),
+                                rs.getString("game_name"),
+                                chessGame
+                        ));
+                    } catch (Exception e) {
+                        throw new DataAccessException("Couldn't deserialize game!" + e.getMessage());
+                    }
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Couldn't list games.");
+            throw new DataAccessException("Couldn't list games");
         }
         return games;
     }

@@ -175,4 +175,23 @@ public class GameDAOTest {
         System.out.println("Successfully listed " + games.size() + " games");
         System.out.println(games);
     }
+
+    @Test
+    @DisplayName("List Games - Negative Case")
+    void listGamesCorruptedJson() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "INSERT INTO games (game_name, game_status) VALUES (?, ?)";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, "Corrupted Game");
+                ps.setString(2, "[1, 2, 3, \"this is an array not an object\"]");
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Couldn't insert test data", e);
+        }
+
+        assertThrows(DataAccessException.class, () -> {
+            gameDAO.listGames();
+        }, "Incorrect json format should throw data access exception");
+    }
 }
