@@ -137,6 +137,9 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
+        if(gameID == 0 || game == null){
+            throw new DataAccessException("GameID should be a positive int and game should not be null");
+        }
         try (var conn = DatabaseManager.getConnection()) {
             var statement = """
                 UPDATE games

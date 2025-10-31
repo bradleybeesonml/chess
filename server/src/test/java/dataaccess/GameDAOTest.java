@@ -216,5 +216,16 @@ public class GameDAOTest {
 
     }
 
+    @Test
+    @DisplayName("UpdateGame - Negative Case")
+    void updateGameTestNegative() throws DataAccessException {
+        assertThrows(DataAccessException.class,()->
+
+
+        gameDAO.updateGame(0, null));
+
+
+    }
+
 
 }
