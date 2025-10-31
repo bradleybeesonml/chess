@@ -2,6 +2,7 @@ package service;
 
 import dataaccess.*;
 import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.UserDAO;
 import model.*;
@@ -17,10 +18,13 @@ public class UserServiceTest {
     private AuthDAO authDAO;
     
     @BeforeEach
-    void setUp() {
-        userDAO = new MemoryUserDAO();
-        authDAO = new MemoryAuthDAO();
+    void setUp() throws DataAccessException {
+        userDAO = new MySQLUserDAO();
+        authDAO = new MySQLAuthDAO();
         userService = new UserService(userDAO, authDAO);
+        userDAO.clear();
+        authDAO.clear();
+
     }
     
     @Test
@@ -62,8 +66,8 @@ public class UserServiceTest {
         String password = "testpassword";
         String email = "test@email.com";
 
-        UserData testUser = new UserData(username, password, email);
-        userDAO.createUser(testUser);
+        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
+        userService.register(registerRequest);
 
         LoginRequest request = new LoginRequest(username, password);
         LoginResult result = userService.login(request);
