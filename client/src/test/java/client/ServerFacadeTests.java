@@ -66,6 +66,20 @@ public class ServerFacadeTests {
                 "Should throw an error when registering a user that already exists.");
     }
 
+    @Test
+    @DisplayName("Login successful")
+    void loginTestSuccess() throws ResponseException{
+        AuthData testUser = facade.register("testUser", "123", "test@test.com");
+        assertNotNull(testUser);
+
+        AuthData loginUser = facade.login("testUser", "123");
+
+        assertNotNull(loginUser);
+        assertEquals("testUser", loginUser.username());
+    }
+
+
+
 
 
 
