@@ -121,6 +121,15 @@ public class ServerFacadeTests {
         assertEquals(1, gamesList.length);
         assertEquals("Game Test 123", gamesList[0].gameName());
 
+    }
+
+    @Test
+    @DisplayName("Create Game negative")
+    void createGameNegative() throws ResponseException {
+        assertThrows(ResponseException.class, () ->
+        facade.createGame("randomAuthToken", "Game Test 123"),
+                "Shouldn't create game if not logged in");
+
 
     }
 
