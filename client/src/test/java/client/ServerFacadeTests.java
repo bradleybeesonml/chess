@@ -1,8 +1,11 @@
 package client;
 
+import dataaccess.exceptions.DataAccessException;
 import org.junit.jupiter.api.*;
 import server.Server;
 import model.AuthData;
+
+import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,6 +54,19 @@ public class ServerFacadeTests {
         AuthData testLoginAfterRegister = facade.login("testUser", "testPassword");
         assertEquals("testUser", testLoginAfterRegister.username());
     }
+
+    @Test
+    @DisplayName("Register negative")
+    void registerTestNegative() throws ResponseException{
+        AuthData testUser = facade.register("testUser", "123", "test@test.com");
+        assertNotNull(testUser);
+
+        assertThrows(ResponseException.class,
+                () -> facade.register("testUser", "123", "test@test.com"),
+                "Should throw an error when registering a user that already exists.");
+    }
+
+
 
 
 
