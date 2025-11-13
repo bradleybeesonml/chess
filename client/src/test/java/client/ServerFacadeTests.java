@@ -148,6 +148,22 @@ public class ServerFacadeTests {
 
     }
 
+    @Test
+    @DisplayName("List Games negative")
+    void listGamesNegative() throws ResponseException {
+        AuthData authData = facade.register("createGameTester", "password", "game@test.com");
+        int gameID = facade.createGame(authData.authToken(), "Game Test 123");
+        int gameID2 = facade.createGame(authData.authToken(), "Game Test 1234");
+        int gameID3 = facade.createGame(authData.authToken(), "Game Test 12345");
+
+        assertThrows(ResponseException.class, () ->
+        facade.listGames("invalidAuthToken"),
+                "Only list games if logged in"
+                );
+
+
+    }
+
 
 
 
