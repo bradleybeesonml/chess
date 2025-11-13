@@ -213,7 +213,16 @@ public class ChessClient {
     }
 
     private void logout() {
-        System.out.println("Logout not yet implemented");
+        try {
+            server.logout(this.authToken);
+            this.state=State.LOGGED_OUT;
+            this.authToken = null;
+            this.username = null;
+            System.out.println("Success! You have been logged out.");
+
+        } catch (ResponseException e) {
+            System.out.println("Sorry, we couldn't log you out of your account. Please try again.");
+        }
     }
 
     private void createGame(String[] tokens) {
