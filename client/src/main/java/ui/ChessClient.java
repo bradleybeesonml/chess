@@ -5,6 +5,9 @@ import client.ServerFacade;
 import client.ResponseException;
 import model.AuthData;
 import java.util.Scanner;
+import java.util.Map;
+import java.util.HashMap;
+import model.GameData;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -12,6 +15,7 @@ public class ChessClient {
     private String authToken = null;
     private String username = null;
     private State state = State.LOGGED_OUT;
+    private Map<Integer, Integer> gameNumberToId = new HashMap<>();
 
     private enum State {
         LOGGED_OUT,
@@ -249,7 +253,44 @@ public class ChessClient {
     }
 
     private void listGames() {
-        System.out.println("List games not yet implemented");
+        try {
+            GameData[] games = server.listGames(this.authToken);
+            gameNumberToId.clear();
+
+            if (games.length == 0) {
+                System.out.println("No games yet. Create one with the 'create' command.");
+                return;
+            }
+
+            System.out.println("\nAvailable Games:");
+
+            for (int i = 0; i < games.length; i++) {
+                int displayNumber = i + 1;
+                GameData game = games[i];
+                gameNumberToId.put(displayNumber, game.gameID());
+
+                String whitePlayer;
+                if (game.whiteUsername() != null) {
+                    whitePlayer = game.whiteUsername();
+                } else {
+                    whitePlayer = "(no white player)";
+                }
+
+                String blackPlayer;
+                if (game.blackUsername() != null) {
+                    blackPlayer = game.blackUsername();
+                } else {
+                    blackPlayer = "(no black player)";
+                }
+
+                System.out.printf("%d. %s", displayNumber, game.gameName());
+                System.out.printf("| White: %s | Black: %s", whitePlayer, blackPlayer + "\n");
+            }
+
+
+        } catch (ResponseException e) {
+            System.out.println("Sorry, an error occurred while listing games.");
+        }
     }
 
     private void playGame(String[] tokens) {
