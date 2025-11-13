@@ -160,6 +160,25 @@ public class ServerFacadeTests {
         facade.listGames("invalidAuthToken"),
                 "Only list games if logged in"
                 );
+    }
+
+    @Test
+    @DisplayName("Join Game success")
+    void joinGameSuccess() throws ResponseException {
+        AuthData authData = facade.register("testUser", "password123", "test@test.com");
+        int gameID = facade.createGame(authData.authToken(), "Testing Join Game 12345");
+
+        assertDoesNotThrow(() -> facade.joinGame(authData.authToken(), gameID, "WHITE"),
+                "joining as white player");
+
+        GameData[] games = facade.listGames(authData.authToken());
+        assertEquals("testUser", games[0].whiteUsername());
+
+        int gameID2 = facade.createGame(authData.authToken(), "Testing Join Game 2");
+        assertDoesNotThrow(() -> facade.joinGame(authData.authToken(), gameID2, "BLACK"),
+                "joining as black");
+        GameData[] gamesNew = facade.listGames(authData.authToken());
+        assertEquals("testUser", gamesNew[1].blackUsername());
 
 
     }

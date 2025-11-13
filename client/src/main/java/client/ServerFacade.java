@@ -67,6 +67,13 @@ public class ServerFacade {
         return result.games();
     }
 
+    public void joinGame(String authToken, int gameID, String playerColor) throws ResponseException {
+        var body = Map.of("gameID", gameID, "playerColor", playerColor);
+        var request = buildRequest("PUT", "/game", body, authToken);
+        var response = sendRequest(request);
+        handleResponse(response, null);
+    }
+
     
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var builder = HttpRequest.newBuilder()
