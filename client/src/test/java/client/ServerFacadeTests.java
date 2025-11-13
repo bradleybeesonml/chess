@@ -183,6 +183,18 @@ public class ServerFacadeTests {
 
     }
 
+    @Test
+    @DisplayName("Join Game negative")
+    void joinGameNegative() throws ResponseException {
+        AuthData authData = facade.register("testUser", "password123", "test@test.com");
+        int gameID = 3;
+
+        assertThrows(ResponseException.class, () ->
+            facade.joinGame(authData.authToken(), gameID, "WHITE"));
+
+
+    }
+
 
 
 
