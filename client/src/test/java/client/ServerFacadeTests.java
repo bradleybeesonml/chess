@@ -1,6 +1,7 @@
 package client;
 
 import dataaccess.exceptions.DataAccessException;
+import model.GameData;
 import org.junit.jupiter.api.*;
 import server.Server;
 import model.AuthData;
@@ -116,8 +117,13 @@ public class ServerFacadeTests {
         AuthData authData = facade.register("createGameTester", "password", "game@test.com");
         int gameID = facade.createGame(authData.authToken(), "Game Test 123");
 
-        //after implementing listgames check if game was created
+        GameData[] gamesList = facade.listGames(authData.authToken());
+        assertEquals(1, gamesList.length);
+        assertEquals("Game Test 123", gamesList[0].gameName());
+
+
     }
+
 
 
 

@@ -58,6 +58,15 @@ public class ServerFacade {
         return ((Double) result.get("gameID")).intValue();
     }
 
+    public GameData[] listGames(String authToken) throws ResponseException {
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = sendRequest(request);
+        record ListGamesResponse(GameData[] games) {}
+        var result = handleResponse(response, ListGamesResponse.class);
+        assert result != null; //again intellij was complaining
+        return result.games();
+    }
+
     
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var builder = HttpRequest.newBuilder()
