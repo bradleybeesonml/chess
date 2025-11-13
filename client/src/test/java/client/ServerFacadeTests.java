@@ -94,6 +94,15 @@ public class ServerFacadeTests {
                 "Should get a response exception when trying to login with the wrong password");
     }
 
+    @Test
+    @DisplayName("Logout - Success")
+    void logoutSuccess() throws ResponseException {
+        AuthData authData = facade.register("logoutUserTest", "password", "logout@test.com");
+
+        assertDoesNotThrow(() -> facade.logout(authData.authToken()),
+                "Should logout with valid token");
+    }
+
 
 
 
