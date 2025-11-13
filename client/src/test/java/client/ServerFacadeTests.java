@@ -42,6 +42,16 @@ public class ServerFacadeTests {
                 "User should not exist after clear");
     }
 
+    @Test
+    @DisplayName("Register success")
+    void registerTestSuccess() throws ResponseException{
+        AuthData testUser = facade.register("testUser", "testPassword", "test@test.com");
+        assertNotNull(testUser);
+
+        AuthData testLoginAfterRegister = facade.login("testUser", "testPassword");
+        assertEquals("testUser", testLoginAfterRegister.username());
+    }
+
 
 
 
