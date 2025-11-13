@@ -8,11 +8,19 @@ public class BoardRender {
     public static void drawWhiteBoard(ChessBoard board) {
         System.out.print(ERASE_SCREEN);
         drawHeaderRow(true);
-        drawRow(board, 1, true);
+        for (int row = 8; row >= 1; row--) {
+            drawRow(board, row, true);
+        }
+        drawHeaderRow(true);
+
     }
 
     public static void drawBlackBoard(ChessBoard board) {
         System.out.print(ERASE_SCREEN);
+        drawHeaderRow(false);
+        for (int row = 1; row <= 8; row++) {
+            drawRow(board, row, false);
+        }
         drawHeaderRow(false);
     }
 
@@ -40,12 +48,19 @@ public class BoardRender {
                 System.out.print(" " + columnLetter + " ");
             }
             System.out.print("   ");
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.println("");
         }
 
         else {
+            System.out.print("   ");
             for (char columnLetter = 'h'; columnLetter >= 'a'; columnLetter--) {
                 System.out.print(" " + columnLetter + " ");
             }
+            System.out.print("   ");
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.println("");
+
         }
     }
 
@@ -73,7 +88,6 @@ public class BoardRender {
 
     private static void drawRow(ChessBoard board, int row, boolean isWhite) {
         System.out.print(EscapeSequences.RESET_BG_COLOR);
-        System.out.println("");
         System.out.print(EscapeSequences.SET_BG_COLOR_WHITE);
         System.out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
         System.out.print(" " + row + " ");
@@ -81,12 +95,12 @@ public class BoardRender {
         for (int col = 1; col <= 8; col++) {
             int actualCol = isWhite ? col : (9 - col);
 
-            boolean isLightSquare = (row + actualCol) % 2 == 1;
+            boolean isLightSquare = (row + actualCol) % 2 == 0;
 
             if (isLightSquare) {
-                System.out.print(EscapeSequences.SET_BG_COLOR_WHITE);
+                System.out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
             } else {
-                System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
+                System.out.print(EscapeSequences.SET_BG_COLOR_BLUE);
             }
 
             chess.ChessPosition position = new chess.ChessPosition(row, actualCol);
