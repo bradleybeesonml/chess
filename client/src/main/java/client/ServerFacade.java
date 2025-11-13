@@ -49,6 +49,15 @@ public class ServerFacade {
         handleResponse(response, null);
     }
 
+    public int createGame(String authToken, String gameName) throws ResponseException {
+        var body = Map.of("gameName", gameName);
+        var request = buildRequest("POST", "/game", body, authToken);
+        var response = sendRequest(request);
+        var result = handleResponse(response, Map.class);
+        assert result != null; //intellij wanted me to add this
+        return ((Double) result.get("gameID")).intValue();
+    }
+
     
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var builder = HttpRequest.newBuilder()

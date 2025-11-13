@@ -110,6 +110,15 @@ public class ServerFacadeTests {
                 "Should throw an error if no valid authtoken");
     }
 
+    @Test
+    @DisplayName("Create Game success")
+    void createGameSuccess() throws ResponseException {
+        AuthData authData = facade.register("createGameTester", "password", "game@test.com");
+        int gameID = facade.createGame(authData.authToken(), "Game Test 123");
+
+        //after implementing listgames check if game was created
+    }
+
 
 
 
