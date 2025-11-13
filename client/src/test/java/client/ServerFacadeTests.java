@@ -130,6 +130,21 @@ public class ServerFacadeTests {
         facade.createGame("randomAuthToken", "Game Test 123"),
                 "Shouldn't create game if not logged in");
 
+    }
+
+    @Test
+    @DisplayName("List Games success")
+    void listGamesSuccess() throws ResponseException {
+        AuthData authData = facade.register("createGameTester", "password", "game@test.com");
+        int gameID = facade.createGame(authData.authToken(), "Game Test 123");
+        int gameID2 = facade.createGame(authData.authToken(), "Game Test 1234");
+        int gameID3 = facade.createGame(authData.authToken(), "Game Test 12345");
+
+        GameData[] gamesList = facade.listGames(authData.authToken());
+        assertEquals(3, gamesList.length);
+        assertEquals("Game Test 123", gamesList[0].gameName());
+        assertEquals("Game Test 1234", gamesList[1].gameName());
+        assertEquals("Game Test 12345", gamesList[2].gameName());
 
     }
 
