@@ -151,12 +151,39 @@ public class ChessClient {
             """);
     }
 
-    private void login(String[] tokens) {
+    private void login(String[] tokens){
         System.out.println("Login not yet implemented");
     }
 
-    private void register(String[] tokens) {
-        System.out.println("Register not yet implemented");
+    private void register(String[] tokens){
+        try {
+            if (tokens.length != 4) {
+                System.out.println("""
+                    Sorry, please try again. To register:
+                    'register': <username> <password> <email>
+                    """);
+                return;
+            }
+            String username = tokens[1];
+            String password = tokens[2];
+            String email = tokens[3];
+
+            AuthData authData = server.register(username, password, email);
+            this.authToken = authData.authToken();
+            this.username = authData.username();
+            this.state = State.LOGGED_IN;
+
+            System.out.println("Success! Account created: " +this.username+". You are now logged in." );
+
+        } catch (ResponseException e) {
+            if (e.getStatusCode() == 403) {
+                System.out.println("Sorry, that username is taken. Please try again.");
+            } else if (e.getStatusCode() == 400) {
+                System.out.println("Sorry, your account info doesn't look quite right. Please try again.");
+            } else {
+                System.out.println("Sorry, something went wrong with your registration. Please try again.");
+            }
+        }
     }
 
     private void logout() {
