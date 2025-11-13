@@ -151,8 +151,34 @@ public class ChessClient {
             """);
     }
 
-    private void login(String[] tokens){
-        System.out.println("Login not yet implemented");
+    private void login(String[] tokens) {
+        try {
+            if (tokens.length != 3) {
+                System.out.println("""
+                Sorry, please try again. To login:
+                'login' <username> <password>
+                """);
+                return;
+            }
+
+            String username = tokens[1];
+            String password = tokens[2];
+
+            AuthData authData = server.login(username, password);
+
+            this.authToken = authData.authToken();
+            this.username = authData.username();
+            this.state = State.LOGGED_IN;
+
+            System.out.println("Success! You are now logged in as " + username);
+
+        } catch (ResponseException e) {
+            if (e.getStatusCode() == 401) {
+                System.out.println("Sorry, your username or password weren't quite right. Please try again.");
+            } else {
+                System.out.println("Error: Unable to login");
+            }
+        }
     }
 
     private void register(String[] tokens){
