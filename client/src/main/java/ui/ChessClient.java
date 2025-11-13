@@ -170,7 +170,7 @@ public class ChessClient {
             this.username = authData.username();
             this.state = State.LOGGED_IN;
 
-            System.out.println("Success! You are now logged in as " + username);
+            System.out.println("Success! You are now logged in as " + username + ". Type 'Help' to see more commands.");
 
         } catch (ResponseException e) {
             if (e.getStatusCode() == 401) {
@@ -226,7 +226,26 @@ public class ChessClient {
     }
 
     private void createGame(String[] tokens) {
-        System.out.println("Create game not yet implemented");
+        try {
+            if (tokens.length < 2) {
+                System.out.println("""
+                        Sorry, you need to provide a name for the game:
+                        Please try again: create <game-name>""");
+                return;
+            }
+
+            String[] gameNameWords = new String[tokens.length - 1];
+            System.arraycopy(tokens, 1, gameNameWords, 0, tokens.length - 1);
+            String gameNameFinal = String.join(" ", gameNameWords);
+
+            int gameID = server.createGame(this.authToken, gameNameFinal);
+
+            System.out.println("Success: Game '" + gameNameFinal + "' created successfully!");
+
+        } catch (ResponseException e) {
+            System.out.println("Sorry, we couldn't create your game. Please try again.");
+        }
+
     }
 
     private void listGames() {
