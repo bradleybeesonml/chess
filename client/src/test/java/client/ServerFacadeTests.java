@@ -78,6 +78,22 @@ public class ServerFacadeTests {
         assertEquals("testUser", loginUser.username());
     }
 
+    @Test
+    @DisplayName("Login negative")
+    void loginTestNegative() throws ResponseException{
+
+        assertThrows(ResponseException.class,
+                () ->facade.login("testUser", "012"),
+                "Should get a response exception when trying to login as a nonexistent user");
+
+        AuthData testUser = facade.register("testUser", "testPassword", "test@test.com");
+
+
+        assertThrows(ResponseException.class,
+                () ->facade.login("testUser", "012"),
+                "Should get a response exception when trying to login with the wrong password");
+    }
+
 
 
 
