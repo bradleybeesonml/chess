@@ -35,7 +35,7 @@ public class ServerFacadeTests {
 
     @Test
     @DisplayName("Clear Database")
-    void clearDatabase_works() throws ResponseException {
+    void clearDatabaseSuccess() throws ResponseException {
         facade.register("user1", "pass1", "u1@test.com");
         facade.register("user2", "pass2", "u2@test.com");
 
