@@ -294,7 +294,53 @@ public class ChessClient {
     }
 
     private void playGame(String[] tokens) {
-        System.out.println("Play game not yet implemented");
+        try {
+            if (tokens.length != 3) {
+                System.out.println("Sorry, that doesn't look right. To play a game: <game-number> WHITE | BLACK");
+                return;
+            }
+
+            int displayNumber;
+            try {
+                displayNumber = Integer.parseInt(tokens[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Game number must be a number");
+                return;
+            }
+
+            Integer gameID = gameNumberToId.get(displayNumber);
+            if (gameID == null) {
+                System.out.println("Error: Invalid game number. Use 'list' to see available games.");
+                return;
+            }
+
+            String color = tokens[2].toUpperCase();
+            if (!color.equals("WHITE") && !color.equals("BLACK")) {
+                System.out.println("Error: Color must be WHITE or BLACK");
+                return;
+            }
+
+            server.joinGame(this.authToken, gameID, color);
+            System.out.println("Successfully joined game as " + color);
+
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+
+            if (color.equals("BLACK")) {
+                BoardRender.drawBlackBoard(board);
+            } else {
+                BoardRender.drawWhiteBoard(board);
+            }
+
+        } catch (ResponseException e) {
+            if (e.getStatusCode() == 403) {
+                System.out.println("Sorry, that color is already taken");
+            } else if (e.getStatusCode() == 400) {
+                System.out.println("Sorry, that game can't be joined right now.");
+            } else {
+                System.out.println("Error: Could not join game");
+            }
+        }
     }
 
     private void observeGame(String[] tokens) {
