@@ -47,13 +47,17 @@ public class GameService {
             throw new UnauthorizedException("Error: unauthorized");
         }
         
-        if (request.playerColor() == null || request.gameID() <= 0 ||
-            (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK"))) {
+        if (request.gameID() <= 0) {
             throw new BadRequestException("Error: bad request");
         }
         
         GameData existingGame = gameDAO.getGame(request.gameID());
         if (existingGame == null) {
+            throw new BadRequestException("Error: bad request");
+        }
+
+        if (request.playerColor() == null || 
+            (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK"))) {
             throw new BadRequestException("Error: bad request");
         }
         

@@ -344,6 +344,31 @@ public class ChessClient {
     }
 
     private void observeGame(String[] tokens) {
-        System.out.println("Observe game not yet implemented");
+        try {
+            if (tokens.length != 2) {
+                System.out.println("That didn't look quite right. To watch a game: 'observe' <game-number>");
+                return;
+            }
+            
+            int displayNumber;
+
+            displayNumber = Integer.parseInt(tokens[1]);
+
+            
+            Integer gameID = gameNumberToId.get(displayNumber);
+            if (gameID == null) {
+                System.out.println("Error: Invalid game number. Use 'list' to see available games.");
+                return;
+            }
+            
+            System.out.println("Now observing game " + displayNumber + ": ");
+            
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            BoardRender.drawWhiteBoard(board);
+            
+        } catch (Exception e) {
+            System.out.println("Error: Could not observe game.");
+        }
     }
 }
