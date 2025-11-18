@@ -12,6 +12,8 @@ public class BoardRender {
             drawRow(board, row, true);
         }
         drawHeaderRow(true);
+        System.out.print(EscapeSequences.RESET_BG_COLOR);
+        System.out.print(RESET_TEXT_COLOR);
 
     }
 
@@ -22,6 +24,8 @@ public class BoardRender {
             drawRow(board, row, false);
         }
         drawHeaderRow(false);
+        System.out.print(EscapeSequences.RESET_BG_COLOR);
+        System.out.print(RESET_TEXT_COLOR);
     }
 
 
@@ -36,6 +40,7 @@ public class BoardRender {
             }
             System.out.print("   ");
             System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
             System.out.println("");
         }
 
@@ -46,6 +51,7 @@ public class BoardRender {
             }
             System.out.print("   ");
             System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print(EscapeSequences.RESET_TEXT_COLOR);
             System.out.println("");
 
         }
