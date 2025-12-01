@@ -50,8 +50,25 @@ public class Server {
         server.get("game", ctx -> listGames(ctx));
         server.put("game", ctx -> joinGame(ctx));
 
-        // Register your endpoints and exception handlers here.
+        WebSocketHandler wsHandler = new WebSocketHandler(gameDAO, authDAO);
 
+        server.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.enableAutomaticPings();
+                System.out.println("WebSocket connected");
+            });
+            ws.onMessage(ctx -> {
+                wsHandler.onMessage(ctx, ctx.message());
+            });
+            ws.onClose(ctx -> {
+                System.out.println("WebSocket closed");
+            });
+            ws.onError(ctx -> {
+                System.out.println("WebSocket error: " + ctx.error());
+        });
+
+
+        });
     }
 
     private void joinGame(Context ctx) {
@@ -196,6 +213,7 @@ public class Server {
             ctx.result(serializer.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
+
 
     private void register(Context ctx){
         var serializer = new Gson();
