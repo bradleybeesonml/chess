@@ -1,11 +1,15 @@
 package server;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.interfaces.AuthDAO;
 import dataaccess.interfaces.GameDAO;
 import io.javalin.websocket.WsContext;
 import model.AuthData;
 import model.GameData;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -29,7 +33,7 @@ public class WebSocketHandler {
 
             switch (command.getCommandType()) {
                 case CONNECT -> handleConnect(ctx, command);
-                // Other cases will come later
+                case MAKE_MOVE -> handleMakeMove(ctx, message);
             }
         } catch (Exception e) {
             sendError(ctx, "Error processing message: " + e.getMessage());
@@ -38,32 +42,26 @@ public class WebSocketHandler {
 
     private void handleConnect(WsContext ctx, UserGameCommand command) {
         try {
-            // 1. Verify authToken
             AuthData auth = authDAO.getAuth(command.getAuthToken());
             if (auth == null) {
                 sendError(ctx, "Error: Invalid auth token");
                 return;
             }
 
-            // 2. Get game
             GameData gameData = gameDAO.getGame(command.getGameID());
             if (gameData == null) {
                 sendError(ctx, "Error: Game not found");
                 return;
             }
 
-            // 3. Add this connection to the game
             connections.addConnection(command.getGameID(), ctx);
 
-            // 4. Send LOAD_GAME to the connecting user (root client)
             LoadGameMessage loadMsg = new LoadGameMessage(gameData.game());
             sendMessage(ctx, loadMsg);
 
-            // 5. Determine if player or observer
             String username = auth.username();
             String role = determineRole(gameData, username);
 
-            // 6. Send NOTIFICATION to all OTHER users in the game
             NotificationMessage notification = new NotificationMessage(
                     username + " joined the game as " + role
             );
@@ -76,6 +74,97 @@ public class WebSocketHandler {
         } catch (Exception e) {
             sendError(ctx, "Error: " + e.getMessage());
         }
+    }
+
+    private void handleMakeMove(WsContext ctx, String message) {
+        try {
+            MakeMoveCommand command = gson.fromJson(message, MakeMoveCommand.class);
+            AuthData auth = authDAO.getAuth(command.getAuthToken());
+            if (auth == null) {
+                sendError(ctx, "Error: invalid auth!");
+                return;
+            }
+
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            if (gameData == null) {
+                sendError(ctx, "No game found");
+                return;
+            }
+
+            ChessGame game = gameData.game();
+            String username = auth.username();
+
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
+            if (playerColor == null) {
+                sendError(ctx, "Error: You are not a player in this game");
+                return;
+            }
+            if (game.getTeamTurn() != playerColor) {
+                sendError(ctx, "Error: It's not your turn");
+                return;
+            }
+
+            ChessMove move = command.getMove();
+            game.makeMove(move);
+
+            GameData updatedGame = new GameData(
+                    gameData.gameID(),
+                    gameData.whiteUsername(),
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    game
+            );
+
+            gameDAO.updateGame(command.getGameID(), updatedGame);
+
+            LoadGameMessage loadMsg = new LoadGameMessage(game);
+            connections.broadcastToAll(command.getGameID(), gson.toJson(loadMsg));
+
+            String moveDesc = createMoveForWebsocket(move);
+            NotificationMessage notification = new NotificationMessage(
+                    username + " made move: " + moveDesc
+            );
+            connections.broadcast(command.getGameID(), gson.toJson(notification), ctx);
+
+            ChessGame.TeamColor opponentColor = (playerColor == ChessGame.TeamColor.WHITE)
+                    ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+
+            if (game.isInCheckmate(opponentColor)) {
+                NotificationMessage checkmateMsg = new NotificationMessage(
+                        getPlayerUsername(gameData, opponentColor) + " is in checkmate!"
+                );
+                connections.broadcastToAll(command.getGameID(), gson.toJson(checkmateMsg));
+            } else if (game.isInCheck(opponentColor)) {
+                NotificationMessage checkMsg = new NotificationMessage(
+                        getPlayerUsername(gameData, opponentColor) + " is in check!"
+                );
+                connections.broadcastToAll(command.getGameID(), gson.toJson(checkMsg));
+            }
+
+        } catch (InvalidMoveException e) {
+            sendError(ctx, "Error: Invalid move - " + e.getMessage());
+        } catch (Exception e) {
+            sendError(ctx, "Error: " + e.getMessage());
+        }
+    }
+
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username) {
+        if (username.equals(gameData.whiteUsername())) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (username.equals(gameData.blackUsername())) {
+            return ChessGame.TeamColor.BLACK;
+        }
+        return null; // Observer
+    }
+
+    private String getPlayerUsername(GameData gameData, ChessGame.TeamColor color) {
+        return (color == ChessGame.TeamColor.WHITE)
+                ? gameData.whiteUsername()
+                : gameData.blackUsername();
+    }
+
+    private String createMoveForWebsocket(ChessMove move) {
+        return move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
     }
 
     private String determineRole(GameData gameData, String username) {
