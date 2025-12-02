@@ -50,8 +50,9 @@ public class Server {
         server.get("game", ctx -> listGames(ctx));
         server.put("game", ctx -> joinGame(ctx));
 
-        WebSocketHandler wsHandler = new WebSocketHandler(gameDAO, authDAO);
 
+        ConnectionManager connections = new ConnectionManager();
+        WebSocketHandler wsHandler = new WebSocketHandler(gameDAO, authDAO, connections);
         server.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 ctx.enableAutomaticPings();
