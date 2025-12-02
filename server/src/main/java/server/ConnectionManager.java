@@ -27,7 +27,10 @@ public class ConnectionManager {
         Set<WsContext> connections = gameConnections.get(gameID);
         if (connections != null) {
             for (WsContext ctx : connections) {
-                if (ctx != excludeSession && ctx.session.isOpen()) {
+                boolean shouldExclude = excludeSession != null
+                        && ctx.session.equals(excludeSession.session);
+
+                if (!shouldExclude && ctx.session.isOpen()) {
                     ctx.send(message);
                 }
             }
