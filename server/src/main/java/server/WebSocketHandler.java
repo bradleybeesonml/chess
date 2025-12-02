@@ -201,6 +201,46 @@ public class WebSocketHandler {
         }
     }
 
+    private void handleLeave(WsContext ctx, UserGameCommand command) {
+        try {
+            AuthData auth = authDAO.getAuth(command.getAuthToken());
+            if (auth == null) {
+                sendError(ctx, "Invalid auth token.");
+                return;
+            }
+
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            if (gameData == null) {
+                sendError(ctx, "Error: Game not found");
+                return;
+            }
+
+            String username = auth.username();
+
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
+            if (playerColor != null) {
+                GameData updatedGame = new GameData(
+                        gameData.gameID(),
+                        playerColor == ChessGame.TeamColor.WHITE ? null : gameData.whiteUsername(),
+                        playerColor == ChessGame.TeamColor.BLACK ? null : gameData.blackUsername(),
+                        gameData.gameName(),
+                        gameData.game()
+                );
+                gameDAO.updateGame(command.getGameID(), updatedGame);
+            }
+
+            connections.removeConnection(command.getGameID(), ctx);
+
+            NotificationMessage notification = new NotificationMessage(
+                    username + " left the game"
+            );
+            connections.broadcast(command.getGameID(), gson.toJson(notification), ctx);
+
+        } catch (Exception e) {
+            sendError(ctx, "Error: " + e.getMessage());
+        }
+    }
+
     private ChessGame.TeamColor getPlayerColor(GameData gameData, String username) {
         if (username.equals(gameData.whiteUsername())) {
             return ChessGame.TeamColor.WHITE;
