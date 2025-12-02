@@ -38,6 +38,8 @@ public class WebSocketHandler {
                 case CONNECT -> handleConnect(ctx, command);
                 case MAKE_MOVE -> handleMakeMove(ctx, message);
                 case RESIGN -> handleResign(ctx, command);
+                case LEAVE -> handleLeave(ctx, command);
+
             }
         } catch (Exception e) {
             sendError(ctx, "Error processing message: " + e.getMessage());
