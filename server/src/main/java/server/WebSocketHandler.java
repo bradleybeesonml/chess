@@ -14,12 +14,15 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import java.util.HashSet;
+import java.util.Set;
 
 public class WebSocketHandler {
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
     private final ConnectionManager connections;
     private final Gson gson = new Gson();
+    private final Set<Integer> finishedGames = new HashSet<>();
 
     public WebSocketHandler(GameDAO gameDAO, AuthDAO authDAO, ConnectionManager connections) {
         this.gameDAO = gameDAO;
@@ -34,6 +37,7 @@ public class WebSocketHandler {
             switch (command.getCommandType()) {
                 case CONNECT -> handleConnect(ctx, command);
                 case MAKE_MOVE -> handleMakeMove(ctx, message);
+                case RESIGN -> handleResign(ctx, command);
             }
         } catch (Exception e) {
             sendError(ctx, "Error processing message: " + e.getMessage());
@@ -79,6 +83,12 @@ public class WebSocketHandler {
     private void handleMakeMove(WsContext ctx, String message) {
         try {
             MakeMoveCommand command = gson.fromJson(message, MakeMoveCommand.class);
+
+            if (finishedGames.contains(command.getGameID())) {
+                sendError(ctx, "Sorry, the game is already over!");
+                return;
+            }
+
             AuthData auth = authDAO.getAuth(command.getAuthToken());
             if (auth == null) {
                 sendError(ctx, "Error: invalid auth!");
@@ -134,6 +144,10 @@ public class WebSocketHandler {
                         getPlayerUsername(gameData, opponentColor) + " is in checkmate!"
                 );
                 connections.broadcastToAll(command.getGameID(), gson.toJson(checkmateMsg));
+
+            if (game.isInCheckmate(opponentColor) || game.isInStalemate(opponentColor)) {
+                finishedGames.add(command.getGameID());
+            }
             } else if (game.isInCheck(opponentColor)) {
                 NotificationMessage checkMsg = new NotificationMessage(
                         getPlayerUsername(gameData, opponentColor) + " is in check!"
@@ -143,6 +157,45 @@ public class WebSocketHandler {
 
         } catch (InvalidMoveException e) {
             sendError(ctx, "Error: Invalid move - " + e.getMessage());
+        } catch (Exception e) {
+            sendError(ctx, "Error: " + e.getMessage());
+        }
+    }
+
+    private void handleResign(WsContext ctx, UserGameCommand command) {
+        try {
+            AuthData auth = authDAO.getAuth(command.getAuthToken());
+            if (auth == null) {
+                sendError(ctx, "Error: invalid auth!");
+                return;
+            }
+
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            if (gameData == null) {
+                sendError(ctx, "Error: Game not found");
+                return;
+            }
+
+            String username = auth.username();
+
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
+            if (playerColor == null) {
+                sendError(ctx, "Error: Observers cannot resign");
+                return;
+            }
+
+            if (finishedGames.contains(command.getGameID())) {
+                sendError(ctx, "Error: Game is already over");
+                return;
+            }
+
+            finishedGames.add(command.getGameID());
+
+            NotificationMessage notification = new NotificationMessage(
+                    username + " resigned. Game over!"
+            );
+            connections.broadcastToAll(command.getGameID(), gson.toJson(notification));
+
         } catch (Exception e) {
             sendError(ctx, "Error: " + e.getMessage());
         }
