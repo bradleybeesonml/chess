@@ -60,12 +60,19 @@ public class GameService {
             (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK"))) {
             throw new BadRequestException("Error: bad request");
         }
-        
-        if (request.playerColor().equals("WHITE") && existingGame.whiteUsername() != null) {
-            throw new AlreadyTakenException("Error: already taken");
+
+        AuthData rejoiningAuth = authDAO.getAuth(request.authToken());
+        String rejoiningUsername = rejoiningAuth.username();
+
+        if (request.playerColor().equals("WHITE")) {
+            if (existingGame.whiteUsername() != null && !existingGame.whiteUsername().equals(rejoiningUsername)) {
+                throw new AlreadyTakenException("Error: already taken");
+            }
         }
-        if (request.playerColor().equals("BLACK") && existingGame.blackUsername() != null) {
-            throw new AlreadyTakenException("Error: already taken");
+        if (request.playerColor().equals("BLACK")) {
+            if (existingGame.blackUsername() != null && !existingGame.blackUsername().equals(rejoiningUsername)) {
+                throw new AlreadyTakenException("Error: already taken");
+            }
         }
         
         GameData updatedGame;
