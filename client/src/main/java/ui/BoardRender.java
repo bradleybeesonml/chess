@@ -2,6 +2,12 @@ package ui;
 
 import chess.ChessBoard;
 import static ui.EscapeSequences.*;
+import chess.ChessGame;
+import chess.ChessPosition;
+import chess.ChessMove;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collection;
 
 public class BoardRender {
     
@@ -115,6 +121,82 @@ public class BoardRender {
         System.out.println();
     }
 
+    public static void highlightMovesWhite(ChessGame game, ChessPosition selectedPiece) {
+        Set<ChessPosition> highlights = getHighlightPositions(game, selectedPiece);
+
+        System.out.print(ERASE_SCREEN);
+        drawHeaderRow(true);
+        for (int row = 8; row >= 1; row--) {
+            drawRowWithHighlights(game.getBoard(), row, true, selectedPiece, highlights);
+        }
+        drawHeaderRow(true);
+        System.out.print(RESET_BG_COLOR);
+        System.out.print(RESET_TEXT_COLOR);
+    }
+
+    public static void highlightMovesBlack(ChessGame game, ChessPosition selectedPiece) {
+        Set<ChessPosition> highlights = getHighlightPositions(game, selectedPiece);
+
+        System.out.print(ERASE_SCREEN);
+        drawHeaderRow(false);
+        for (int row = 1; row <= 8; row++) {
+            drawRowWithHighlights(game.getBoard(), row, false, selectedPiece, highlights);
+        }
+        drawHeaderRow(false);
+        System.out.print(RESET_BG_COLOR);
+        System.out.print(RESET_TEXT_COLOR);
+    }
+
+    private static Set<ChessPosition> getHighlightPositions(ChessGame game, ChessPosition selectedPiece) {
+        Set<ChessPosition> highlights = new HashSet<>();
+
+        Collection<ChessMove> validMoves = game.validMoves(selectedPiece);
+        if (validMoves != null) {
+            for (ChessMove move : validMoves) {
+                highlights.add(move.getEndPosition());
+            }
+        }
+
+        return highlights;
+    }
+
+    private static void drawRowWithHighlights(ChessBoard board, int row, boolean isWhite,
+                                              ChessPosition selectedPiece, Set<ChessPosition> highlights) {
+        System.out.print(RESET_BG_COLOR);
+        System.out.print(SET_BG_COLOR_WHITE);
+        System.out.print(SET_TEXT_COLOR_BLACK);
+        System.out.print(" " + row + " ");
+
+        for (int col = 1; col <= 8; col++) {
+            int actualCol = isWhite ? col : (9 - col);
+            ChessPosition position = new ChessPosition(row, actualCol);
+
+            if (position.equals(selectedPiece) || highlights.contains(position)) {
+                System.out.print(SET_BG_COLOR_GREEN);
+            } else {
+                boolean isLightSquare = (row + actualCol) % 2 == 0;
+                if (isLightSquare) {
+                    System.out.print(SET_BG_COLOR_LIGHT_GREY);
+                } else {
+                    System.out.print(SET_BG_COLOR_BLUE);
+                }
+            }
+
+            chess.ChessPiece piece = board.getPiece(position);
+            if (piece == null) {
+                System.out.print(EMPTY);
+            } else {
+                System.out.print(getPieceSymbol(piece));
+            }
+        }
+
+        System.out.print(SET_BG_COLOR_WHITE);
+        System.out.print(SET_TEXT_COLOR_BLACK);
+        System.out.print(" " + row + " ");
+        System.out.print(RESET_BG_COLOR);
+        System.out.print(RESET_TEXT_COLOR);
+        System.out.println();
+    }
 
 
 }

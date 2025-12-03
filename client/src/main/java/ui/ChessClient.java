@@ -540,8 +540,8 @@ public class ChessClient implements NotificationHandler {
         char colChar = Character.toLowerCase(pos.charAt(0));
         char rowChar = pos.charAt(1);
 
-        int col = colChar - 'a' + 1;  // a=1, b=2, etc.
-        int row = rowChar - '0';       // 1-8
+        int col = colChar - 'a' + 1;
+        int row = rowChar - '0';
 
         if (col < 1 || col > 8 || row < 1 || row > 8) {
             throw new IllegalArgumentException("Position out of range");
@@ -569,7 +569,18 @@ public class ChessClient implements NotificationHandler {
 
         try {
             ChessPosition pos = parsePosition(tokens[1]);
-            System.out.println("Highlight moves for " + tokens[1] + " - (not yet implemented)");
+
+            if (currentGame.getBoard().getPiece(pos) == null) {
+                System.out.println("No piece at " + tokens[1]);
+                return;
+            }
+
+            if (playerColor == ChessGame.TeamColor.BLACK) {
+                BoardRender.highlightMovesBlack(currentGame, pos);
+            } else {
+                BoardRender.highlightMovesWhite(currentGame, pos);
+            }
+
         } catch (Exception e) {
             System.out.println("Invalid position: " + e.getMessage());
         }

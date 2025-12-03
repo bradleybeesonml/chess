@@ -112,7 +112,7 @@ public class WebSocketHandler {
                 return;
             }
             if (game.getTeamTurn() != playerColor) {
-                sendError(ctx, "Error: It's not your turn");
+                sendError(ctx, "Sorry, it's not your turn");
                 return;
             }
 
