@@ -45,7 +45,9 @@ public class GamePlayUI implements NotificationHandler {
 
     private boolean handleCommand(String input) {
         String[] tokens = input.split("\\s+");
-        if (tokens.length == 0 || tokens[0].isEmpty()) return true;
+        if (tokens.length == 0 || tokens[0].isEmpty()){
+            return true;
+        }
 
         String command = tokens[0].toLowerCase();
 
