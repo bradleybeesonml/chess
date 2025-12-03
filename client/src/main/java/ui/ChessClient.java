@@ -19,23 +19,18 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 
-public class ChessClient implements NotificationHandler {
+public class ChessClient {
     private final ServerFacade server;
     private final Scanner scanner;
     private String authToken = null;
     private String username = null;
     private State state = State.LOGGED_OUT;
     private final Map<Integer, Integer> gameNumberToId = new HashMap<>();
-    private WebSocketClient ws;
-    private int currentGameID;
-    private ChessGame.TeamColor playerColor;  // null if observing
-    private ChessGame currentGame;
     private final String serverUrl;
 
     private enum State {
         LOGGED_OUT,
-        LOGGED_IN,
-        PLAYING
+        LOGGED_IN
     }
 
     public ChessClient(String serverUrl) {
@@ -69,50 +64,10 @@ public class ChessClient implements NotificationHandler {
         System.out.println("Thanks for playing!");
     }
 
-    private boolean handleGameplayCommand(String command, String[] tokens) {
-        switch (command) {
-            case "help" -> {
-                showGameplayHelp();
-            }
-            case "redraw" -> {
-                redrawBoard();
-            }
-            case "leave" -> {
-                leaveGame();
-            }
-            case "move" -> {
-                makeMove(tokens);
-            }
-            case "resign" -> {
-                resignGame();
-            }
-            case "highlight" -> {
-                highlightMoves(tokens);
-            }
-            default -> {
-                System.out.println("Unknown command. Type 'help' for options.");
-            }
-        }
-        return true;
-    }
-
-    private void showGameplayHelp() {
-        System.out.println("""
-            Gameplay commands:
-              'redraw' - Redraw the chess board
-              'move' <from> <to> [promotion] - Make a move (e.g., 'move e2 e4' or 'move e7 e8 q')
-              'highlight' <position> - Show legal moves for a piece (e.g., 'highlight e2')
-              'resign' - Forfeit the game
-              'leave' - Leave the game (return to main menu)
-              'help' - Show this help message
-            """);
-    }
 
     private void printPrompt() {
         if (state == State.LOGGED_OUT) {
             System.out.print("\n[LOGGED_OUT] >>> ");
-        } else if (state == State.PLAYING) {
-            System.out.print("\n[IN GAME] >>> ");
         } else {
             System.out.print("\n[" + username + "] >>> ");
         }
@@ -129,8 +84,6 @@ public class ChessClient implements NotificationHandler {
 
         if (state == State.LOGGED_OUT) {
             return handlePreloginCommand(command, tokens);
-        } else if (state == State.PLAYING) {
-            return handleGameplayCommand(command, tokens);
         } else {
             return handlePostloginCommand(command, tokens);
         }
@@ -382,15 +335,12 @@ public class ChessClient implements NotificationHandler {
 
             server.joinGame(this.authToken, gameID, color);
 
-            String wsUrl = serverUrl.replace("http", "ws") + "/ws";
-            ws = new WebSocketClient(wsUrl, this);
-            ws.connect(authToken, gameID);
+            ChessGame.TeamColor playerColor = color.equals("WHITE")
+                    ? ChessGame.TeamColor.WHITE
+                    : ChessGame.TeamColor.BLACK;
 
-            this.currentGameID = gameID;
-            this.playerColor = color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-            this.state = State.PLAYING;
-
-            System.out.println("Joined game as " + color + ". Type 'help' for commands.");
+            GamePlayUI gameplay = new GamePlayUI(serverUrl, authToken, gameID, playerColor, scanner);
+            gameplay.run();
 
         } catch (ResponseException e) {
             if (e.getStatusCode() == 403) {
@@ -420,170 +370,15 @@ public class ChessClient implements NotificationHandler {
                 return;
             }
 
-            String wsUrl = serverUrl.replace("http", "ws") + "/ws";
-            ws = new WebSocketClient(wsUrl, this);
-            ws.connect(authToken, gameID);
-
-            this.currentGameID = gameID;
-            this.playerColor = null;
-            this.state = State.PLAYING;
-
-            System.out.println("Observing game. Type 'help' for commands.");
+            GamePlayUI gameplay = new GamePlayUI(serverUrl, authToken, gameID, null, scanner);
+            gameplay.run();
 
         } catch (Exception e) {
-            System.out.println("Error: Could not observe game - " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
-    @Override
-    public void onLoadGame(LoadGameMessage message) {
-        this.currentGame = message.getGame();
-        System.out.println();
-        redrawBoard();
-        printPrompt();
-    }
 
-    @Override
-    public void onNotification(NotificationMessage message) {
-        System.out.println("\n" + message.getMessage());
-        printPrompt();
-    }
 
-    @Override
-    public void onError(ErrorMessage message) {
-        System.out.println("\nError: " + message.getErrorMessage());
-        printPrompt();
-    }
-
-    private void redrawBoard() {
-        if (currentGame == null) {
-            System.out.println("No game to display.");
-            return;
-        }
-
-        ChessBoard board = currentGame.getBoard();
-        if (playerColor == ChessGame.TeamColor.BLACK) {
-            BoardRender.drawBlackBoard(board);
-        } else {
-            BoardRender.drawWhiteBoard(board);  // White or observer
-        }
-    }
-
-    private void leaveGame() {
-        try {
-            ws.leave(authToken, currentGameID);
-            ws.close();
-            ws = null;
-            currentGame = null;
-            currentGameID = 0;
-            playerColor = null;
-            state = State.LOGGED_IN;
-            System.out.println("Left the game.");
-        } catch (Exception e) {
-            System.out.println("Error leaving game: " + e.getMessage());
-        }
-    }
-
-    private void resignGame() {
-        if (playerColor == null) {
-            System.out.println("Observers cannot resign.");
-            return;
-        }
-
-        System.out.print("Are you sure you want to resign? (yes/no): ");
-        String confirm = scanner.nextLine().trim().toLowerCase();
-        if (confirm.equals("yes")) {
-            try {
-                ws.resign(authToken, currentGameID);
-            } catch (Exception e) {
-                System.out.println("Error resigning: " + e.getMessage());
-            }
-        } else {
-            System.out.println("Resignation cancelled.");
-        }
-    }
-
-    private void makeMove(String[] tokens) {
-        if (playerColor == null) {
-            System.out.println("Observers cannot make moves.");
-            return;
-        }
-
-        if (tokens.length < 3) {
-            System.out.println("Usage: move <from> <to> [promotion]");
-            System.out.println("Example: move e2 e4");
-            System.out.println("Example: move e7 e8 q  (pawn promotion to queen)");
-            return;
-        }
-
-        try {
-            ChessPosition from = parsePosition(tokens[1]);
-            ChessPosition to = parsePosition(tokens[2]);
-
-            chess.ChessPiece.PieceType promotion = null;
-            if (tokens.length >= 4) {
-                promotion = parsePromotion(tokens[3]);
-            }
-
-            ChessMove move = new ChessMove(from, to, promotion);
-            ws.makeMove(authToken, currentGameID, move);
-
-        } catch (Exception e) {
-            System.out.println("Invalid move: " + e.getMessage());
-        }
-    }
-
-    private ChessPosition parsePosition(String pos) {
-        if (pos.length() != 2) {
-            throw new IllegalArgumentException("Position must be like 'e2'");
-        }
-        char colChar = Character.toLowerCase(pos.charAt(0));
-        char rowChar = pos.charAt(1);
-
-        int col = colChar - 'a' + 1;
-        int row = rowChar - '0';
-
-        if (col < 1 || col > 8 || row < 1 || row > 8) {
-            throw new IllegalArgumentException("Position out of range");
-        }
-
-        return new ChessPosition(row, col);
-    }
-
-    private chess.ChessPiece.PieceType parsePromotion(String piece) {
-        return switch (piece.toLowerCase()) {
-            case "q", "queen" -> chess.ChessPiece.PieceType.QUEEN;
-            case "r", "rook" -> chess.ChessPiece.PieceType.ROOK;
-            case "b", "bishop" -> chess.ChessPiece.PieceType.BISHOP;
-            case "n", "knight" -> chess.ChessPiece.PieceType.KNIGHT;
-            default -> throw new IllegalArgumentException("Invalid promotion piece");
-        };
-    }
-
-    private void highlightMoves(String[] tokens) {
-        if (tokens.length != 2) {
-            System.out.println("Usage: highlight <position>");
-            System.out.println("Example: highlight e2");
-            return;
-        }
-
-        try {
-            ChessPosition pos = parsePosition(tokens[1]);
-
-            if (currentGame.getBoard().getPiece(pos) == null) {
-                System.out.println("No piece at " + tokens[1]);
-                return;
-            }
-
-            if (playerColor == ChessGame.TeamColor.BLACK) {
-                BoardRender.highlightMovesBlack(currentGame, pos);
-            } else {
-                BoardRender.highlightMovesWhite(currentGame, pos);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Invalid position: " + e.getMessage());
-        }
-    }
 
 }

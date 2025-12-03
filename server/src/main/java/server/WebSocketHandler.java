@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.interfaces.AuthDAO;
@@ -259,7 +260,12 @@ public class WebSocketHandler {
     }
 
     private String createMoveForWebsocket(ChessMove move) {
-        return move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
+        return positionToAlgebraic(move.getStartPosition()) + " -> " + positionToAlgebraic(move.getEndPosition());
+    }
+
+    private String positionToAlgebraic(ChessPosition pos) {
+        char col = (char) ('a' + pos.getColumn() - 1);
+        return "" + col + pos.getRow();
     }
 
     private String determineRole(GameData gameData, String username) {
